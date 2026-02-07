@@ -39,6 +39,42 @@
     </section>
 
     <section class="settings-section">
+      <h2>Smart Food Estimation (AI)</h2>
+      <p class="section-desc">Connect an LLM to estimate macros from natural language. When you type something like "3 homemade sugarless waffles", the AI estimates the nutritional values. Without this, only the built-in food database is used.</p>
+
+      <form id="llm-form">
+        <div class="form-group">
+          <label for="llm-provider">Provider</label>
+          <select id="llm-provider">
+            <option value="">Disabled (local DB only)</option>
+            <option value="gemini">Google Gemini Flash (free tier)</option>
+            <option value="openai">OpenAI (GPT-4o-mini)</option>
+            <option value="anthropic">Anthropic (Claude Haiku)</option>
+          </select>
+        </div>
+
+        <div id="llm-key-section" class="hidden">
+          <div class="form-group">
+            <label for="llm-api-key">API Key</label>
+            <input type="password" id="llm-api-key" placeholder="Paste your API key here">
+          </div>
+
+          <div id="llm-help" class="help-text"></div>
+
+          <div class="form-group" id="llm-model-group" style="display:none">
+            <label for="llm-model">Model (optional override)</label>
+            <input type="text" id="llm-model" placeholder="Leave blank for default">
+          </div>
+
+          <button type="button" id="llm-test" class="btn btn-secondary" style="margin-bottom:8px">Test Connection</button>
+          <div id="llm-test-result" class="help-text"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save AI Settings</button>
+      </form>
+    </section>
+
+    <section class="settings-section">
       <h2>Data Management</h2>
 
       <div class="data-actions">

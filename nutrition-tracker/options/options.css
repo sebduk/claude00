@@ -69,7 +69,8 @@ h1 {
   margin-bottom: 4px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 10px 12px;
   background: var(--bg-input);
@@ -79,10 +80,36 @@ h1 {
   font-size: 14px;
   outline: none;
   transition: border-color 0.15s;
+  font-family: inherit;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   border-color: var(--accent);
+}
+
+.form-group select option {
+  background: var(--bg-input);
+  color: var(--text);
+}
+
+.help-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.help-text a {
+  color: var(--accent);
+}
+
+.help-text.success {
+  color: var(--success);
+}
+
+.help-text.error {
+  color: #ef4444;
 }
 
 .btn {

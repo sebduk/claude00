@@ -165,9 +165,20 @@
           <button id="override-add" class="btn btn-primary btn-sm">Add with Custom Macros</button>
         </div>
 
+        <!-- LLM estimation loading -->
+        <div id="food-estimating" class="estimating-card hidden">
+          <div class="estimating-spinner"></div>
+          <span>Estimating macros with AI...</span>
+        </div>
+
+        <!-- LLM estimation error -->
+        <div id="food-estimate-error" class="estimate-error hidden">
+          <p id="estimate-error-msg"></p>
+        </div>
+
         <!-- No match: full manual entry -->
         <div id="food-no-match" class="no-match hidden">
-          <p>Not found in database. Enter macros manually:</p>
+          <p>Not in local database. Enter macros manually:</p>
           <div class="form-group">
             <input type="text" id="manual-name" placeholder="Food name">
           </div>
@@ -339,6 +350,7 @@ Lunch: Grilled chicken salad - 450 kcal, 40g protein, 20g carbs, 15g fat</pre>
   <script src="../lib/storage.js"></script>
   <script src="../lib/nutrition.js"></script>
   <script src="../lib/food-db.js"></script>
+  <script src="../lib/llm-estimator.js"></script>
   <script src="../lib/tips.js"></script>
   <script src="../lib/import.js"></script>
   <script src="popup.js"></script>

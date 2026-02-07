@@ -203,6 +203,8 @@
   // ── Smart Food Input (the main new feature) ──
   // ══════════════════════════════════════════════
 
+  let isEstimating = false; // Prevent double LLM calls
+
   function initSmartFoodInput() {
     const input = document.getElementById('food-input');
     const suggestionsEl = document.getElementById('food-suggestions');
@@ -210,7 +212,7 @@
 
     let debounceTimer;
 
-    // As user types, show suggestions + preview
+    // As user types, show suggestions + preview (local DB only - no LLM on keystrokes)
     input.addEventListener('input', () => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => onFoodInputChange(input.value), 150);
@@ -234,12 +236,8 @@
         } else if (currentLookup) {
           addCurrentLookup();
         } else {
-          // Try lookup on current text
-          const text = input.value.trim();
-          if (text) {
-            onFoodInputChange(text);
-            if (currentLookup) addCurrentLookup();
-          }
+          // No local match: trigger LLM estimation or add
+          triggerEstimateOrAdd();
         }
       } else if (e.key === 'Escape') {
         hideSuggestions();
@@ -251,16 +249,12 @@
       setTimeout(() => hideSuggestions(), 200);
     });
 
-    // + button
+    // + button: add if matched, otherwise trigger LLM estimation
     addBtn.addEventListener('click', () => {
       if (currentLookup) {
         addCurrentLookup();
       } else {
-        const text = input.value.trim();
-        if (text) {
-          onFoodInputChange(text);
-          if (currentLookup) addCurrentLookup();
-        }
+        triggerEstimateOrAdd();
       }
     });
 
@@ -314,6 +308,9 @@
     });
   }
 
+  /**
+   * Called on every keystroke (debounced). Only does local DB matching.
+   */
   function onFoodInputChange(text) {
     text = text.trim();
     if (!text) {
@@ -323,25 +320,84 @@
       return;
     }
 
-    // Show autocomplete suggestions
+    // Clear any previous LLM states
+    document.getElementById('food-estimating').classList.add('hidden');
+    document.getElementById('food-estimate-error').classList.add('hidden');
+
+    // Show autocomplete suggestions from local DB
     const suggestions = FoodDB.suggest(text);
     renderSuggestions(suggestions, text);
 
-    // Try to lookup the full text
+    // Try to lookup the full text in local DB
     const lookup = FoodDB.lookup(text);
     currentLookup = lookup;
 
     if (lookup) {
-      showFoodPreview(lookup);
+      showFoodPreview(lookup, false);
       document.getElementById('food-no-match').classList.add('hidden');
     } else {
       document.getElementById('food-preview').classList.add('hidden');
       document.getElementById('food-manual-override').classList.add('hidden');
-      // Show manual entry if we have text but no match
-      if (text.length >= 2) {
+      // Don't show manual entry yet - wait until user presses Enter/+ to trigger LLM
+      document.getElementById('food-no-match').classList.add('hidden');
+    }
+  }
+
+  /**
+   * Called when user presses Enter or + with no local match.
+   * Tries LLM estimation first, falls back to manual entry form.
+   */
+  async function triggerEstimateOrAdd() {
+    const text = document.getElementById('food-input').value.trim();
+    if (!text) return;
+
+    // Try local DB one more time
+    const lookup = FoodDB.lookup(text);
+    if (lookup) {
+      currentLookup = lookup;
+      addCurrentLookup();
+      return;
+    }
+
+    // Check if LLM is available
+    const llmAvailable = await LLMEstimator.isAvailable();
+    if (!llmAvailable) {
+      // No LLM configured - show manual entry
+      document.getElementById('food-no-match').classList.remove('hidden');
+      document.getElementById('manual-name').value = text;
+      return;
+    }
+
+    // Trigger LLM estimation
+    if (isEstimating) return;
+    isEstimating = true;
+
+    hideAllPreviews();
+    document.getElementById('food-estimating').classList.remove('hidden');
+
+    try {
+      const result = await LLMEstimator.estimate(text);
+
+      document.getElementById('food-estimating').classList.add('hidden');
+
+      if (result) {
+        // Show as estimated preview
+        currentLookup = { result, estimated: true };
+        showFoodPreview(currentLookup, true);
+      } else {
+        // LLM returned unparseable response
         document.getElementById('food-no-match').classList.remove('hidden');
         document.getElementById('manual-name').value = text;
       }
+    } catch (err) {
+      document.getElementById('food-estimating').classList.add('hidden');
+      document.getElementById('food-estimate-error').classList.remove('hidden');
+      document.getElementById('estimate-error-msg').textContent =
+        `AI estimation failed: ${err.message}. Enter macros manually below.`;
+      document.getElementById('food-no-match').classList.remove('hidden');
+      document.getElementById('manual-name').value = text;
+    } finally {
+      isEstimating = false;
     }
   }
 
@@ -391,22 +447,31 @@
     suggestIndex = -1;
   }
 
-  function showFoodPreview(lookup) {
+  function showFoodPreview(lookup, isEstimated) {
     const r = lookup.result;
-    document.getElementById('preview-name').textContent = r.name;
-    document.getElementById('preview-serving').textContent = r.serving;
+    const previewEl = document.getElementById('food-preview');
+    const nameEl = document.getElementById('preview-name');
+
+    nameEl.innerHTML = escapeHtml(r.name) +
+      (isEstimated ? ' <span class="preview-badge">AI estimate</span>' : '');
+    document.getElementById('preview-serving').textContent = r.serving || '';
     document.getElementById('preview-kcal').textContent = Math.round(r.kcal);
     document.getElementById('preview-protein').textContent = r.protein.toFixed(1);
     document.getElementById('preview-carbs').textContent = r.carbs.toFixed(1);
     document.getElementById('preview-fat').textContent = r.fat.toFixed(1);
-    document.getElementById('food-preview').classList.remove('hidden');
+
+    previewEl.classList.remove('hidden');
+    previewEl.classList.toggle('estimated', !!isEstimated);
     document.getElementById('food-manual-override').classList.add('hidden');
+    document.getElementById('food-estimate-error').classList.add('hidden');
   }
 
   function hideAllPreviews() {
     document.getElementById('food-preview').classList.add('hidden');
     document.getElementById('food-manual-override').classList.add('hidden');
     document.getElementById('food-no-match').classList.add('hidden');
+    document.getElementById('food-estimating').classList.add('hidden');
+    document.getElementById('food-estimate-error').classList.add('hidden');
   }
 
   async function addCurrentLookup() {
