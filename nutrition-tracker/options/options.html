@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nutrition Tracker - Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="settings-page">
+    <h1>Nutrition Tracker Settings</h1>
+
+    <section class="settings-section">
+      <h2>Daily Targets</h2>
+      <p class="section-desc">Set your daily macro targets. These are used to calculate your remaining intake and generate tips.</p>
+
+      <form id="targets-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="target-kcal">Calories (kcal)</label>
+            <input type="number" id="target-kcal" min="500" max="10000" step="50">
+          </div>
+          <div class="form-group">
+            <label for="target-protein">Protein (g)</label>
+            <input type="number" id="target-protein" min="0" max="500" step="5">
+          </div>
+          <div class="form-group">
+            <label for="target-carbs">Carbs (g)</label>
+            <input type="number" id="target-carbs" min="0" max="1000" step="5">
+          </div>
+          <div class="form-group">
+            <label for="target-fat">Fat (g)</label>
+            <input type="number" id="target-fat" min="0" max="300" step="5">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Targets</button>
+      </form>
+    </section>
+
+    <section class="settings-section">
+      <h2>Data Management</h2>
+
+      <div class="data-actions">
+        <button id="export-data" class="btn btn-secondary">Export All Data (JSON)</button>
+        <button id="clear-today" class="btn btn-danger">Clear Today's Data</button>
+        <button id="clear-all" class="btn btn-danger">Clear All Data</button>
+      </div>
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

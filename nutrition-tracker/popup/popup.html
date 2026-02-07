@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nutrition Tracker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>Nutrition Tracker</h1>
+      <div class="header-actions">
+        <button id="btn-settings" class="icon-btn" title="Settings">&#9881;</button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="log-food">+ Food</button>
+      <button class="tab" data-tab="log-exercise">+ Exercise</button>
+      <button class="tab" data-tab="import">Import</button>
+    </nav>
+
+    <!-- Dashboard Tab -->
+    <section id="tab-dashboard" class="tab-content active">
+      <div class="date-nav">
+        <button id="prev-day" class="icon-btn">&larr;</button>
+        <span id="current-date"></span>
+        <button id="next-day" class="icon-btn">&rarr;</button>
+      </div>
+
+      <!-- Macro Progress Bars -->
+      <div class="macro-grid">
+        <div class="macro-card" data-macro="kcal">
+          <div class="macro-header">
+            <span class="macro-label">Calories</span>
+            <span class="macro-value"><span id="kcal-current">0</span> / <span id="kcal-target">2000</span></span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill kcal-fill" id="kcal-bar" style="width: 0%"></div>
+          </div>
+          <span class="macro-remaining" id="kcal-remaining">2000 remaining</span>
+        </div>
+
+        <div class="macro-card" data-macro="protein">
+          <div class="macro-header">
+            <span class="macro-label">Protein</span>
+            <span class="macro-value"><span id="protein-current">0</span>g / <span id="protein-target">150</span>g</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill protein-fill" id="protein-bar" style="width: 0%"></div>
+          </div>
+          <span class="macro-remaining" id="protein-remaining">150g remaining</span>
+        </div>
+
+        <div class="macro-card" data-macro="carbs">
+          <div class="macro-header">
+            <span class="macro-label">Carbs</span>
+            <span class="macro-value"><span id="carbs-current">0</span>g / <span id="carbs-target">250</span>g</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill carbs-fill" id="carbs-bar" style="width: 0%"></div>
+          </div>
+          <span class="macro-remaining" id="carbs-remaining">250g remaining</span>
+        </div>
+
+        <div class="macro-card" data-macro="fat">
+          <div class="macro-header">
+            <span class="macro-label">Fat</span>
+            <span class="macro-value"><span id="fat-current">0</span>g / <span id="fat-target">65</span>g</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill fat-fill" id="fat-bar" style="width: 0%"></div>
+          </div>
+          <span class="macro-remaining" id="fat-remaining">65g remaining</span>
+        </div>
+      </div>
+
+      <!-- Exercise Summary -->
+      <div class="exercise-summary" id="exercise-summary">
+        <div class="macro-header">
+          <span class="macro-label">Exercise Burned</span>
+          <span class="macro-value" id="exercise-kcal">0 kcal</span>
+        </div>
+      </div>
+
+      <!-- Net Calories -->
+      <div class="net-calories">
+        <span>Net Calories:</span>
+        <strong id="net-kcal">0</strong>
+      </div>
+
+      <!-- Smart Tips -->
+      <div class="tips-section" id="tips-section">
+        <h3>Tips</h3>
+        <div id="tips-content" class="tips-content"></div>
+      </div>
+
+      <!-- Today's Log -->
+      <div class="log-section">
+        <h3>Today's Log</h3>
+        <div id="food-log" class="log-list"></div>
+        <div id="exercise-log" class="log-list"></div>
+      </div>
+    </section>
+
+    <!-- Log Food Tab -->
+    <section id="tab-log-food" class="tab-content">
+      <h2>Log Food</h2>
+
+      <!-- Quick Add Common Foods -->
+      <div class="quick-add">
+        <h3>Quick Add</h3>
+        <div class="quick-foods" id="quick-foods"></div>
+      </div>
+
+      <!-- Manual Entry -->
+      <form id="food-form" class="entry-form">
+        <h3>Manual Entry</h3>
+        <div class="form-group">
+          <label for="food-name">Food Name</label>
+          <input type="text" id="food-name" placeholder="e.g. Chicken breast" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="food-kcal">Calories</label>
+            <input type="number" id="food-kcal" placeholder="kcal" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="food-protein">Protein (g)</label>
+            <input type="number" id="food-protein" placeholder="g" min="0" step="0.1" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="food-carbs">Carbs (g)</label>
+            <input type="number" id="food-carbs" placeholder="g" min="0" step="0.1" required>
+          </div>
+          <div class="form-group">
+            <label for="food-fat">Fat (g)</label>
+            <input type="number" id="food-fat" placeholder="g" min="0" step="0.1" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="food-serving">Serving Size</label>
+          <input type="text" id="food-serving" placeholder="e.g. 100g, 1 cup">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Food</button>
+      </form>
+
+      <!-- Recent Foods -->
+      <div class="recent-section">
+        <h3>Recent Foods</h3>
+        <div id="recent-foods" class="recent-list"></div>
+      </div>
+    </section>
+
+    <!-- Log Exercise Tab -->
+    <section id="tab-log-exercise" class="tab-content">
+      <h2>Log Exercise</h2>
+
+      <!-- Quick Add Exercises -->
+      <div class="quick-add">
+        <h3>Quick Add</h3>
+        <div class="quick-exercises" id="quick-exercises"></div>
+      </div>
+
+      <!-- Manual Entry -->
+      <form id="exercise-form" class="entry-form">
+        <h3>Manual Entry</h3>
+        <div class="form-group">
+          <label for="exercise-name">Exercise</label>
+          <input type="text" id="exercise-name" placeholder="e.g. Running" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="exercise-duration">Duration (min)</label>
+            <input type="number" id="exercise-duration" placeholder="min" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="exercise-calories">Calories Burned</label>
+            <input type="number" id="exercise-calories" placeholder="kcal" min="0" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="exercise-notes">Notes</label>
+          <input type="text" id="exercise-notes" placeholder="e.g. 5K run, moderate pace">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Exercise</button>
+      </form>
+    </section>
+
+    <!-- Import Tab -->
+    <section id="tab-import" class="tab-content">
+      <h2>Import from ChatGPT</h2>
+      <p class="import-info">Paste your ChatGPT conversation or structured data below. The parser supports multiple formats.</p>
+
+      <div class="import-format-help">
+        <h3>Supported Formats</h3>
+        <details>
+          <summary>Structured text (one entry per line)</summary>
+          <pre>Breakfast: Oatmeal - 300 kcal, 10g protein, 50g carbs, 8g fat
+Lunch: Grilled chicken salad - 450 kcal, 40g protein, 20g carbs, 15g fat</pre>
+        </details>
+        <details>
+          <summary>JSON array</summary>
+          <pre>[{"name":"Oatmeal","kcal":300,"protein":10,"carbs":50,"fat":8}]</pre>
+        </details>
+        <details>
+          <summary>ChatGPT conversation (auto-parsed)</summary>
+          <pre>Just paste the whole conversation - the parser will extract food entries with macro data.</pre>
+        </details>
+      </div>
+
+      <form id="import-form" class="entry-form">
+        <div class="form-group">
+          <label for="import-data">Paste Data</label>
+          <textarea id="import-data" rows="10" placeholder="Paste your ChatGPT conversation or food data here..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="import-date">Import Date</label>
+          <input type="date" id="import-date">
+        </div>
+        <button type="submit" class="btn btn-primary">Parse & Preview</button>
+      </form>
+
+      <!-- Import Preview -->
+      <div id="import-preview" class="import-preview hidden">
+        <h3>Preview (<span id="import-count">0</span> items found)</h3>
+        <div id="import-items" class="log-list"></div>
+        <div class="import-actions">
+          <button id="import-confirm" class="btn btn-primary">Import All</button>
+          <button id="import-cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="../lib/storage.js"></script>
+  <script src="../lib/nutrition.js"></script>
+  <script src="../lib/tips.js"></script>
+  <script src="../lib/import.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
