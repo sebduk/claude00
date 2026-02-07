@@ -10,13 +10,18 @@
   let currentDate = Storage.today();
   let targets = await Storage.getTargets();
   let pendingImport = [];
+  let currentLookup = null;  // Current food-db lookup result
+  let suggestIndex = -1;     // Active suggestion index for keyboard nav
 
   // ── Init ──
-  await initTabs();
-  await initDateNav();
-  await initQuickFoods();
+  initTabs();
+  initDateNav();
+  initSmartFoodInput();
+  await initMealPresets();
   await initQuickExercises();
-  await initForms();
+  initExerciseForm();
+  initPresetForm();
+  initImportForm();
   await refreshDashboard();
 
   document.getElementById('btn-settings').addEventListener('click', () => {
@@ -32,6 +37,11 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+
+        // Refresh presets list when switching to presets tab
+        if (tab.dataset.tab === 'presets') renderPresetsList();
+        // Refresh recent foods when switching to food tab
+        if (tab.dataset.tab === 'log-food') renderRecentFoods();
       });
     });
   }
@@ -76,28 +86,20 @@
     const totals = Nutrition.calculateTotals(data.foods);
     const exerciseCals = Nutrition.calculateExerciseCalories(data.exercises);
 
-    // Update macro cards
     updateMacroCard('kcal', totals.kcal, targets.kcal, 'kcal');
     updateMacroCard('protein', totals.protein, targets.protein, 'g');
     updateMacroCard('carbs', totals.carbs, targets.carbs, 'g');
     updateMacroCard('fat', totals.fat, targets.fat, 'g');
 
-    // Update exercise summary
     document.getElementById('exercise-kcal').textContent = `${exerciseCals} kcal`;
 
-    // Update net calories
     const netKcal = Nutrition.calculateNetCalories(totals.kcal, exerciseCals);
     const netEl = document.getElementById('net-kcal');
     netEl.textContent = `${Math.round(netKcal)} kcal`;
     netEl.className = netKcal > targets.kcal ? 'net-positive' : '';
 
-    // Update tips
     renderTips(totals, targets, data.exercises);
-
-    // Update food log
     renderFoodLog(data.foods);
-
-    // Update exercise log
     renderExerciseLog(data.exercises);
   }
 
@@ -129,15 +131,11 @@
   function renderTips(totals, targets, exercises) {
     const tips = Tips.generate(totals, targets, exercises);
     const container = document.getElementById('tips-content');
-
     if (tips.length === 0) {
       container.innerHTML = '<div class="tip-item">Log some food to get personalized tips.</div>';
       return;
     }
-
-    container.innerHTML = tips.map(tip =>
-      `<div class="tip-item">${tip.text}</div>`
-    ).join('');
+    container.innerHTML = tips.map(tip => `<div class="tip-item">${tip.text}</div>`).join('');
   }
 
   // ── Food Log ──
@@ -163,11 +161,9 @@
         </div>`;
     }).join('');
 
-    // Attach delete handlers
     container.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
-        const foodId = e.target.dataset.foodId;
-        await Storage.removeFood(currentDate, foodId);
+        await Storage.removeFood(currentDate, e.target.dataset.foodId);
         await refreshDashboard();
         showToast('Food removed', 'success');
       });
@@ -177,10 +173,7 @@
   // ── Exercise Log ──
   function renderExerciseLog(exercises) {
     const container = document.getElementById('exercise-log');
-    if (exercises.length === 0) {
-      container.innerHTML = '';
-      return;
-    }
+    if (exercises.length === 0) { container.innerHTML = ''; return; }
 
     container.innerHTML = exercises.map(ex => {
       const time = ex.timestamp ? new Date(ex.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
@@ -199,35 +192,336 @@
 
     container.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
-        const exerciseId = e.target.dataset.exerciseId;
-        await Storage.removeExercise(currentDate, exerciseId);
+        await Storage.removeExercise(currentDate, e.target.dataset.exerciseId);
         await refreshDashboard();
         showToast('Exercise removed', 'success');
       });
     });
   }
 
-  // ── Quick Foods ──
-  async function initQuickFoods() {
-    const quickFoods = await Storage.getQuickFoods();
-    const container = document.getElementById('quick-foods');
-    container.innerHTML = quickFoods.map((food, i) =>
-      `<button class="quick-item" data-index="${i}">${escapeHtml(food.name)}</button>`
-    ).join('');
+  // ══════════════════════════════════════════════
+  // ── Smart Food Input (the main new feature) ──
+  // ══════════════════════════════════════════════
 
-    container.addEventListener('click', async (e) => {
-      const btn = e.target.closest('.quick-item');
-      if (!btn) return;
-      const food = quickFoods[btn.dataset.index];
-      await Storage.addFood(currentDate, { ...food });
+  function initSmartFoodInput() {
+    const input = document.getElementById('food-input');
+    const suggestionsEl = document.getElementById('food-suggestions');
+    const addBtn = document.getElementById('food-input-add');
+
+    let debounceTimer;
+
+    // As user types, show suggestions + preview
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => onFoodInputChange(input.value), 150);
+    });
+
+    // Keyboard navigation in suggestions
+    input.addEventListener('keydown', (e) => {
+      const items = suggestionsEl.querySelectorAll('.suggestion-item');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        suggestIndex = Math.min(suggestIndex + 1, items.length - 1);
+        updateSuggestionHighlight(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        suggestIndex = Math.max(suggestIndex - 1, -1);
+        updateSuggestionHighlight(items);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (suggestIndex >= 0 && items[suggestIndex]) {
+          items[suggestIndex].click();
+        } else if (currentLookup) {
+          addCurrentLookup();
+        } else {
+          // Try lookup on current text
+          const text = input.value.trim();
+          if (text) {
+            onFoodInputChange(text);
+            if (currentLookup) addCurrentLookup();
+          }
+        }
+      } else if (e.key === 'Escape') {
+        hideSuggestions();
+      }
+    });
+
+    // Close suggestions on blur (with delay for click)
+    input.addEventListener('blur', () => {
+      setTimeout(() => hideSuggestions(), 200);
+    });
+
+    // + button
+    addBtn.addEventListener('click', () => {
+      if (currentLookup) {
+        addCurrentLookup();
+      } else {
+        const text = input.value.trim();
+        if (text) {
+          onFoodInputChange(text);
+          if (currentLookup) addCurrentLookup();
+        }
+      }
+    });
+
+    // Preview: Add This
+    document.getElementById('preview-add').addEventListener('click', () => addCurrentLookup());
+
+    // Preview: Edit Macros
+    document.getElementById('preview-edit').addEventListener('click', () => {
+      if (!currentLookup) return;
+      const r = currentLookup.result;
+      document.getElementById('override-kcal').value = r.kcal;
+      document.getElementById('override-protein').value = r.protein;
+      document.getElementById('override-carbs').value = r.carbs;
+      document.getElementById('override-fat').value = r.fat;
+      document.getElementById('food-manual-override').classList.remove('hidden');
+    });
+
+    // Override: Add with Custom Macros
+    document.getElementById('override-add').addEventListener('click', async () => {
+      if (!currentLookup) return;
+      const food = {
+        name: currentLookup.result.name,
+        kcal: Number(document.getElementById('override-kcal').value) || 0,
+        protein: Number(document.getElementById('override-protein').value) || 0,
+        carbs: Number(document.getElementById('override-carbs').value) || 0,
+        fat: Number(document.getElementById('override-fat').value) || 0,
+        serving: currentLookup.result.serving
+      };
+      await Storage.addFood(currentDate, food);
       await refreshDashboard();
+      resetFoodInput();
       showToast(`Added ${food.name}`, 'success');
     });
 
-    // Also render recent foods
+    // Manual add (no match)
+    document.getElementById('manual-add').addEventListener('click', async () => {
+      const name = document.getElementById('manual-name').value.trim() ||
+                   document.getElementById('food-input').value.trim() || 'Custom food';
+      const food = {
+        name,
+        kcal: Number(document.getElementById('manual-kcal').value) || 0,
+        protein: Number(document.getElementById('manual-protein').value) || 0,
+        carbs: Number(document.getElementById('manual-carbs').value) || 0,
+        fat: Number(document.getElementById('manual-fat').value) || 0,
+        serving: ''
+      };
+      await Storage.addFood(currentDate, food);
+      await refreshDashboard();
+      resetFoodInput();
+      showToast(`Added ${food.name}`, 'success');
+    });
+  }
+
+  function onFoodInputChange(text) {
+    text = text.trim();
+    if (!text) {
+      hideSuggestions();
+      hideAllPreviews();
+      currentLookup = null;
+      return;
+    }
+
+    // Show autocomplete suggestions
+    const suggestions = FoodDB.suggest(text);
+    renderSuggestions(suggestions, text);
+
+    // Try to lookup the full text
+    const lookup = FoodDB.lookup(text);
+    currentLookup = lookup;
+
+    if (lookup) {
+      showFoodPreview(lookup);
+      document.getElementById('food-no-match').classList.add('hidden');
+    } else {
+      document.getElementById('food-preview').classList.add('hidden');
+      document.getElementById('food-manual-override').classList.add('hidden');
+      // Show manual entry if we have text but no match
+      if (text.length >= 2) {
+        document.getElementById('food-no-match').classList.remove('hidden');
+        document.getElementById('manual-name').value = text;
+      }
+    }
+  }
+
+  function renderSuggestions(foods, query) {
+    const el = document.getElementById('food-suggestions');
+    if (foods.length === 0) { hideSuggestions(); return; }
+
+    suggestIndex = -1;
+    el.innerHTML = foods.map((f, i) => {
+      const info = f.per === 1 && f.unit
+        ? `${f.kcal} kcal / ${f.unit}`
+        : `${f.kcal} kcal / 100g`;
+      return `<div class="suggestion-item" data-index="${i}">
+        <span class="suggestion-name">${escapeHtml(f.name)}</span>
+        <span class="suggestion-info">${info}</span>
+      </div>`;
+    }).join('');
+
+    el.classList.remove('hidden');
+
+    // Click handler for each suggestion
+    el.querySelectorAll('.suggestion-item').forEach((item, i) => {
+      item.addEventListener('click', () => {
+        const food = foods[i];
+        const input = document.getElementById('food-input');
+        // Preserve any quantity prefix the user typed
+        const { quantity, unit } = FoodDB.parseQuantity(input.value);
+        let newText = food.name;
+        if (quantity && unit) newText = `${quantity}${unit} ${food.name}`;
+        else if (quantity) newText = `${quantity} ${food.name}`;
+
+        input.value = newText;
+        hideSuggestions();
+        onFoodInputChange(newText);
+      });
+    });
+  }
+
+  function updateSuggestionHighlight(items) {
+    items.forEach((item, i) => {
+      item.classList.toggle('active', i === suggestIndex);
+    });
+  }
+
+  function hideSuggestions() {
+    document.getElementById('food-suggestions').classList.add('hidden');
+    suggestIndex = -1;
+  }
+
+  function showFoodPreview(lookup) {
+    const r = lookup.result;
+    document.getElementById('preview-name').textContent = r.name;
+    document.getElementById('preview-serving').textContent = r.serving;
+    document.getElementById('preview-kcal').textContent = Math.round(r.kcal);
+    document.getElementById('preview-protein').textContent = r.protein.toFixed(1);
+    document.getElementById('preview-carbs').textContent = r.carbs.toFixed(1);
+    document.getElementById('preview-fat').textContent = r.fat.toFixed(1);
+    document.getElementById('food-preview').classList.remove('hidden');
+    document.getElementById('food-manual-override').classList.add('hidden');
+  }
+
+  function hideAllPreviews() {
+    document.getElementById('food-preview').classList.add('hidden');
+    document.getElementById('food-manual-override').classList.add('hidden');
+    document.getElementById('food-no-match').classList.add('hidden');
+  }
+
+  async function addCurrentLookup() {
+    if (!currentLookup) return;
+    const r = currentLookup.result;
+    await Storage.addFood(currentDate, { ...r });
+    await refreshDashboard();
+    resetFoodInput();
+    showToast(`Added ${r.name}`, 'success');
+  }
+
+  function resetFoodInput() {
+    document.getElementById('food-input').value = '';
+    currentLookup = null;
+    hideAllPreviews();
+    hideSuggestions();
+  }
+
+  // ══════════════════════════
+  // ── Meal Presets ──
+  // ══════════════════════════
+
+  async function initMealPresets() {
+    await renderMealPresetsQuick();
+    await renderPresetsList();
     await renderRecentFoods();
   }
 
+  async function renderMealPresetsQuick() {
+    const presets = await Storage.getMealPresets();
+    const container = document.getElementById('meal-presets-quick');
+    const section = document.getElementById('presets-quick-section');
+
+    if (presets.length === 0) {
+      section.classList.add('hidden');
+      return;
+    }
+
+    section.classList.remove('hidden');
+    container.innerHTML = presets.map((p, i) =>
+      `<button class="quick-item preset-item" data-index="${i}">
+        ${escapeHtml(p.name)}
+        <span class="preset-sub">${Math.round(p.kcal)} kcal</span>
+      </button>`
+    ).join('');
+
+    container.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.preset-item');
+      if (!btn) return;
+      const preset = presets[btn.dataset.index];
+      await Storage.addFood(currentDate, {
+        name: preset.name,
+        kcal: preset.kcal,
+        protein: preset.protein,
+        carbs: preset.carbs,
+        fat: preset.fat,
+        serving: preset.description || ''
+      });
+      await refreshDashboard();
+      showToast(`Added ${preset.name}`, 'success');
+    });
+  }
+
+  async function renderPresetsList() {
+    const presets = await Storage.getMealPresets();
+    const container = document.getElementById('presets-list');
+
+    if (presets.length === 0) {
+      container.innerHTML = '<div class="empty-state">No presets yet. Create one above.</div>';
+      return;
+    }
+
+    container.innerHTML = presets.map(p =>
+      `<div class="preset-list-item">
+        <div class="preset-list-info">
+          <div class="preset-list-name">${escapeHtml(p.name)}</div>
+          ${p.description ? `<div class="preset-list-desc">${escapeHtml(p.description)}</div>` : ''}
+          <div class="preset-list-macros">${Math.round(p.kcal)} kcal | P: ${Number(p.protein).toFixed(1)}g | C: ${Number(p.carbs).toFixed(1)}g | F: ${Number(p.fat).toFixed(1)}g</div>
+        </div>
+        <div class="preset-list-actions">
+          <button class="delete-btn" data-preset-id="${p.id}" title="Delete">&times;</button>
+        </div>
+      </div>`
+    ).join('');
+
+    container.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        await Storage.removeMealPreset(e.target.dataset.presetId);
+        await renderPresetsList();
+        await renderMealPresetsQuick();
+        showToast('Preset deleted', 'success');
+      });
+    });
+  }
+
+  function initPresetForm() {
+    document.getElementById('preset-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const preset = {
+        name: document.getElementById('preset-name').value.trim(),
+        description: document.getElementById('preset-description').value.trim(),
+        kcal: Number(document.getElementById('preset-kcal').value),
+        protein: Number(document.getElementById('preset-protein').value),
+        carbs: Number(document.getElementById('preset-carbs').value),
+        fat: Number(document.getElementById('preset-fat').value),
+      };
+      await Storage.addMealPreset(preset);
+      e.target.reset();
+      await renderPresetsList();
+      await renderMealPresetsQuick();
+      showToast(`Saved "${preset.name}" preset`, 'success');
+    });
+  }
+
+  // ── Recent Foods ──
   async function renderRecentFoods() {
     const recent = await Storage.getRecentFoods();
     const container = document.getElementById('recent-foods');
@@ -246,15 +540,17 @@
       </div>`
     ).join('');
 
-    container.addEventListener('click', async (e) => {
+    // Re-attach click handler (avoid duplicate listeners by using a fresh clone approach)
+    const newContainer = container.cloneNode(true);
+    container.parentNode.replaceChild(newContainer, container);
+
+    newContainer.addEventListener('click', async (e) => {
       const item = e.target.closest('.recent-item');
       if (!item) return;
       const food = recent[item.dataset.index];
       await Storage.addFood(currentDate, { ...food });
       await refreshDashboard();
       showToast(`Added ${food.name}`, 'success');
-      // Switch to dashboard
-      document.querySelector('.tab[data-tab="dashboard"]').click();
     });
   }
 
@@ -276,27 +572,8 @@
     });
   }
 
-  // ── Forms ──
-  function initForms() {
-    // Food form
-    document.getElementById('food-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const food = {
-        name: document.getElementById('food-name').value.trim(),
-        kcal: Number(document.getElementById('food-kcal').value),
-        protein: Number(document.getElementById('food-protein').value),
-        carbs: Number(document.getElementById('food-carbs').value),
-        fat: Number(document.getElementById('food-fat').value),
-        serving: document.getElementById('food-serving').value.trim()
-      };
-      await Storage.addFood(currentDate, food);
-      e.target.reset();
-      await refreshDashboard();
-      showToast(`Added ${food.name}`, 'success');
-      document.querySelector('.tab[data-tab="dashboard"]').click();
-    });
-
-    // Exercise form
+  // ── Exercise Form ──
+  function initExerciseForm() {
     document.getElementById('exercise-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const exercise = {
@@ -311,27 +588,26 @@
       showToast(`Added ${exercise.name}`, 'success');
       document.querySelector('.tab[data-tab="dashboard"]').click();
     });
+  }
 
-    // Import form
+  // ── Import Form ──
+  function initImportForm() {
     document.getElementById('import-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const text = document.getElementById('import-data').value;
       pendingImport = ImportParser.parse(text);
-
       if (pendingImport.length === 0) {
-        showToast('No food entries found in the data. Check the supported formats.', 'warning');
+        showToast('No food entries found. Check the supported formats.', 'warning');
         return;
       }
-
       renderImportPreview(pendingImport);
     });
 
-    // Import date default
     document.getElementById('import-date').value = currentDate;
 
-    // Import confirm
     document.getElementById('import-confirm').addEventListener('click', async () => {
       const importDate = document.getElementById('import-date').value || currentDate;
+      const count = pendingImport.length;
       await Storage.importFoods(importDate, pendingImport);
       currentDate = importDate;
       renderDate();
@@ -339,11 +615,10 @@
       document.getElementById('import-preview').classList.add('hidden');
       document.getElementById('import-data').value = '';
       await refreshDashboard();
-      showToast(`Imported ${pendingImport.length || 'all'} items`, 'success');
+      showToast(`Imported ${count} items`, 'success');
       document.querySelector('.tab[data-tab="dashboard"]').click();
     });
 
-    // Import cancel
     document.getElementById('import-cancel').addEventListener('click', () => {
       pendingImport = [];
       document.getElementById('import-preview').classList.add('hidden');
@@ -353,7 +628,6 @@
   function renderImportPreview(items) {
     const container = document.getElementById('import-items');
     document.getElementById('import-count').textContent = items.length;
-
     container.innerHTML = items.map(food =>
       `<div class="log-item">
         <div class="log-item-info">
@@ -362,7 +636,6 @@
         </div>
       </div>`
     ).join('');
-
     document.getElementById('import-preview').classList.remove('hidden');
   }
 

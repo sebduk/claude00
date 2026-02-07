@@ -21,6 +21,7 @@
       <button class="tab active" data-tab="dashboard">Dashboard</button>
       <button class="tab" data-tab="log-food">+ Food</button>
       <button class="tab" data-tab="log-exercise">+ Exercise</button>
+      <button class="tab" data-tab="presets">Presets</button>
       <button class="tab" data-tab="import">Import</button>
     </nav>
 
@@ -111,49 +112,96 @@
     <section id="tab-log-food" class="tab-content">
       <h2>Log Food</h2>
 
-      <!-- Quick Add Common Foods -->
-      <div class="quick-add">
-        <h3>Quick Add</h3>
-        <div class="quick-foods" id="quick-foods"></div>
+      <!-- Smart Text Input -->
+      <div class="smart-input-section">
+        <div class="form-group">
+          <label for="food-input">What did you eat?</label>
+          <div class="smart-input-wrapper">
+            <input type="text" id="food-input" placeholder="e.g. chicken breast 150g, 2 eggs, banana..." autocomplete="off">
+            <button id="food-input-add" class="inline-add-btn" title="Add">+</button>
+          </div>
+          <!-- Autocomplete dropdown -->
+          <div id="food-suggestions" class="suggestions-dropdown hidden"></div>
+        </div>
+
+        <!-- Preview of matched food -->
+        <div id="food-preview" class="food-preview hidden">
+          <div class="preview-header">
+            <span class="preview-name" id="preview-name"></span>
+            <span class="preview-serving" id="preview-serving"></span>
+          </div>
+          <div class="preview-macros">
+            <span class="preview-macro kcal"><span id="preview-kcal">0</span> kcal</span>
+            <span class="preview-macro protein">P: <span id="preview-protein">0</span>g</span>
+            <span class="preview-macro carbs">C: <span id="preview-carbs">0</span>g</span>
+            <span class="preview-macro fat">F: <span id="preview-fat">0</span>g</span>
+          </div>
+          <div class="preview-actions">
+            <button id="preview-add" class="btn btn-primary btn-sm">Add This</button>
+            <button id="preview-edit" class="btn btn-secondary btn-sm">Edit Macros</button>
+          </div>
+        </div>
+
+        <!-- Editable macro override (hidden by default) -->
+        <div id="food-manual-override" class="manual-override hidden">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="override-kcal">kcal</label>
+              <input type="number" id="override-kcal" min="0" step="1">
+            </div>
+            <div class="form-group">
+              <label for="override-protein">Protein</label>
+              <input type="number" id="override-protein" min="0" step="0.1">
+            </div>
+            <div class="form-group">
+              <label for="override-carbs">Carbs</label>
+              <input type="number" id="override-carbs" min="0" step="0.1">
+            </div>
+            <div class="form-group">
+              <label for="override-fat">Fat</label>
+              <input type="number" id="override-fat" min="0" step="0.1">
+            </div>
+          </div>
+          <button id="override-add" class="btn btn-primary btn-sm">Add with Custom Macros</button>
+        </div>
+
+        <!-- No match: full manual entry -->
+        <div id="food-no-match" class="no-match hidden">
+          <p>Not found in database. Enter macros manually:</p>
+          <div class="form-group">
+            <input type="text" id="manual-name" placeholder="Food name">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="manual-kcal">kcal</label>
+              <input type="number" id="manual-kcal" min="0" step="1">
+            </div>
+            <div class="form-group">
+              <label for="manual-protein">Protein</label>
+              <input type="number" id="manual-protein" min="0" step="0.1">
+            </div>
+            <div class="form-group">
+              <label for="manual-carbs">Carbs</label>
+              <input type="number" id="manual-carbs" min="0" step="0.1">
+            </div>
+            <div class="form-group">
+              <label for="manual-fat">Fat</label>
+              <input type="number" id="manual-fat" min="0" step="0.1">
+            </div>
+          </div>
+          <button id="manual-add" class="btn btn-primary btn-sm">Add Food</button>
+        </div>
       </div>
 
-      <!-- Manual Entry -->
-      <form id="food-form" class="entry-form">
-        <h3>Manual Entry</h3>
-        <div class="form-group">
-          <label for="food-name">Food Name</label>
-          <input type="text" id="food-name" placeholder="e.g. Chicken breast" required>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="food-kcal">Calories</label>
-            <input type="number" id="food-kcal" placeholder="kcal" min="0" required>
-          </div>
-          <div class="form-group">
-            <label for="food-protein">Protein (g)</label>
-            <input type="number" id="food-protein" placeholder="g" min="0" step="0.1" required>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="food-carbs">Carbs (g)</label>
-            <input type="number" id="food-carbs" placeholder="g" min="0" step="0.1" required>
-          </div>
-          <div class="form-group">
-            <label for="food-fat">Fat (g)</label>
-            <input type="number" id="food-fat" placeholder="g" min="0" step="0.1" required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="food-serving">Serving Size</label>
-          <input type="text" id="food-serving" placeholder="e.g. 100g, 1 cup">
-        </div>
-        <button type="submit" class="btn btn-primary">Add Food</button>
-      </form>
+      <!-- Meal Presets (quick tap) -->
+      <div class="presets-quick" id="presets-quick-section">
+        <h3>My Meals</h3>
+        <div class="quick-foods" id="meal-presets-quick"></div>
+      </div>
 
       <!-- Recent Foods -->
       <div class="recent-section">
-        <h3>Recent Foods</h3>
+        <h3>Recent</h3>
         <div id="recent-foods" class="recent-list"></div>
       </div>
     </section>
@@ -191,6 +239,52 @@
         </div>
         <button type="submit" class="btn btn-primary">Add Exercise</button>
       </form>
+    </section>
+
+    <!-- Presets Tab -->
+    <section id="tab-presets" class="tab-content">
+      <h2>Meal Presets</h2>
+      <p class="section-desc">Create reusable meals. Tap them in the Food tab to log instantly.</p>
+
+      <!-- Create New Preset -->
+      <form id="preset-form" class="entry-form">
+        <h3>New Preset</h3>
+        <div class="form-group">
+          <label for="preset-name">Meal Name</label>
+          <input type="text" id="preset-name" placeholder="e.g. Breakfast, ProteinShake" required>
+        </div>
+        <div class="form-group">
+          <label for="preset-description">Description (optional)</label>
+          <input type="text" id="preset-description" placeholder="e.g. Eggs, toast, coffee, OJ">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="preset-kcal">Calories</label>
+            <input type="number" id="preset-kcal" placeholder="kcal" min="0" required>
+          </div>
+          <div class="form-group">
+            <label for="preset-protein">Protein (g)</label>
+            <input type="number" id="preset-protein" placeholder="g" min="0" step="0.1" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="preset-carbs">Carbs (g)</label>
+            <input type="number" id="preset-carbs" placeholder="g" min="0" step="0.1" required>
+          </div>
+          <div class="form-group">
+            <label for="preset-fat">Fat (g)</label>
+            <input type="number" id="preset-fat" placeholder="g" min="0" step="0.1" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Preset</button>
+      </form>
+
+      <!-- Existing Presets List -->
+      <div class="presets-list-section">
+        <h3>Saved Presets</h3>
+        <div id="presets-list" class="log-list"></div>
+      </div>
     </section>
 
     <!-- Import Tab -->
@@ -244,6 +338,7 @@ Lunch: Grilled chicken salad - 450 kcal, 40g protein, 20g carbs, 15g fat</pre>
 
   <script src="../lib/storage.js"></script>
   <script src="../lib/nutrition.js"></script>
+  <script src="../lib/food-db.js"></script>
   <script src="../lib/tips.js"></script>
   <script src="../lib/import.js"></script>
   <script src="popup.js"></script>

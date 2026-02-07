@@ -103,23 +103,38 @@ const Storage = {
     await chrome.storage.local.set({ recentFoods: recent });
   },
 
-  // Quick foods (customizable presets)
-  async getQuickFoods() {
-    const result = await chrome.storage.local.get('quickFoods');
-    return result.quickFoods || [
-      { name: 'Chicken Breast (150g)', kcal: 248, protein: 46, carbs: 0, fat: 5.4 },
-      { name: 'Rice (200g cooked)', kcal: 260, protein: 5.4, carbs: 56, fat: 0.6 },
-      { name: 'Eggs (2 large)', kcal: 156, protein: 12, carbs: 1.1, fat: 10.6 },
-      { name: 'Banana', kcal: 105, protein: 1.3, carbs: 27, fat: 0.4 },
-      { name: 'Greek Yogurt (200g)', kcal: 130, protein: 20, carbs: 8, fat: 0.8 },
-      { name: 'Oatmeal (50g dry)', kcal: 190, protein: 7, carbs: 34, fat: 3.4 },
-      { name: 'Salmon (150g)', kcal: 312, protein: 34, carbs: 0, fat: 18.6 },
-      { name: 'Avocado (half)', kcal: 160, protein: 2, carbs: 8.5, fat: 14.7 },
-      { name: 'Protein Shake', kcal: 150, protein: 30, carbs: 5, fat: 2 },
-      { name: 'Almonds (30g)', kcal: 173, protein: 6, carbs: 6, fat: 15 },
-      { name: 'Sweet Potato (200g)', kcal: 172, protein: 3.2, carbs: 40, fat: 0.2 },
-      { name: 'Broccoli (150g)', kcal: 51, protein: 4.2, carbs: 10, fat: 0.6 },
-    ];
+  // ── Meal Presets ──
+  // User-defined meals (e.g. "Breakfast", "ProteinShake") with full macro breakdowns
+  async getMealPresets() {
+    const result = await chrome.storage.local.get('mealPresets');
+    return result.mealPresets || [];
+  },
+
+  async saveMealPresets(presets) {
+    await chrome.storage.local.set({ mealPresets: presets });
+  },
+
+  async addMealPreset(preset) {
+    const presets = await this.getMealPresets();
+    preset.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    presets.push(preset);
+    await this.saveMealPresets(presets);
+    return preset;
+  },
+
+  async updateMealPreset(id, updates) {
+    const presets = await this.getMealPresets();
+    const idx = presets.findIndex(p => p.id === id);
+    if (idx >= 0) {
+      presets[idx] = { ...presets[idx], ...updates };
+      await this.saveMealPresets(presets);
+    }
+  },
+
+  async removeMealPreset(id) {
+    let presets = await this.getMealPresets();
+    presets = presets.filter(p => p.id !== id);
+    await this.saveMealPresets(presets);
   },
 
   // Quick exercises
