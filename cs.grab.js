@@ -1,106 +1,183 @@
-function getImgData() {
-  let imgArray=[];
-  //const pageUrl = window.location.href;
-  //const saveToDir = /[^/]*\/[^/]*\/$/.exec(pageUrl)[0];
-  for (let i=0; i<=maxImg; i++) {
-    let myUrl = document.getElementById('image-' + i).src;
-    //console.log('i:' + i + ' | myUrl:' + myUrl);
-    imgArray.push([i, myUrl]);
+'use strict';
+
+/*
+ * Content Script — runs on webtoon pages
+ *
+ * Loads all lazy images using multiple strategies (works even in background tabs),
+ * confirms every image is loaded, then signals the background to close this tab
+ * and open the next.
+ */
+
+const LOAD_TIMEOUT_MS = 60000;
+const POLL_INTERVAL_MS = 2000;
+const PRELOAD_TIMEOUT_MS = 15000;
+
+// ---------------------------------------------------------------------------
+// DOM helpers
+// ---------------------------------------------------------------------------
+
+function getMaxImg() {
+  for (let i = 0; i < 500; i++) {
+    if (!document.getElementById('image-' + i)) return i - 1;
   }
-  //console.log(imgArray);
-  return imgArray;
+  return 499;
 }
 
 function getNextPage() {
-  let pageUrlNext = '';
-  const btnNext = document.getElementsByClassName('btn next_page')[0];
-  if (btnNext != null) {pageUrlNext = btnNext.href;}
-  console.log('cs - pageUrlNext:' + pageUrlNext);
-  return pageUrlNext;
+  const btn = document.getElementsByClassName('btn next_page')[0];
+  const url = btn ? btn.href : '';
+  console.log('cs - Next page:', url);
+  return url;
 }
 
-function getMaxImg() {
-  let maxImg = -1;
-  for (let i=0; i<500; i++) {
-    let e = document.getElementById('image-' + i);
-    if (e == null) {maxImg = i - 1; i = 500}
+function isLoaded(img) {
+  return img && img.complete && img.naturalWidth > 0;
+}
+
+function countLoaded(maxImg) {
+  let n = 0;
+  for (let i = 0; i <= maxImg; i++) {
+    if (isLoaded(document.getElementById('image-' + i))) n++;
   }
-  console.log('maxImg:' + maxImg);
-  return maxImg;
+  return n;
 }
 
-function getWait(mySeconds, maxImg) {
-  const coef=5;
-  let myWait = coef*50;
-  if (maxImg > 10)  {myWait=coef*25;}
-  if (maxImg > 50)  {myWait=coef*10;}
-  if (maxImg > 100) {myWait=coef*2.5;}
-  mywait = mySeconds * 1000 / 7 / maxImg;
-  return myWait;
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
 }
 
-function getTop(mySeconds, myWait, maxImg) {
-  let myTop = Math.max(mySeconds * 1000 / myWait / maxImg, 2); myTop = Math.min(myTop, 8);
-  return myTop;
-}
+// ---------------------------------------------------------------------------
+// Strategy 1 — Force lazy-load attributes into src
+// Works in background tabs. Handles data-src, data-lazy-src, data-original, etc.
+// ---------------------------------------------------------------------------
 
-function checkImgData(imgArray) {
-  let myIndex=0, lastIndex=0;
-  const regex = /\/([a-z-]{0,3}([0-9]+)[a-z-]{0,3})\.jpg/;
-  for (imgData of imgArray) {
-    if (imgData[1] == '') {
-      console.log('MISSING - ' + imgData[0]);
-    } else {
-      try {myIndex=parseInt(imgData[1].match(regex)[2]);}
-      catch (e) {console.log(imgData[1] + ' not set');}
-
-      if ( myIndex == lastIndex + 1 ) {
-        console.log(imgData[1] + ' good index');
-      } else {
-        console.log(imgData[1] + ' check index');
+function forceLazyLoad(maxImg) {
+  const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-url'];
+  for (let i = 0; i <= maxImg; i++) {
+    const img = document.getElementById('image-' + i);
+    if (!img) continue;
+    img.loading = 'eager';
+    for (const attr of lazyAttrs) {
+      const val = img.getAttribute(attr);
+      if (val && val.startsWith('http')) {
+        img.src = val;
+        break;
       }
-      lastIndex=myIndex;
     }
   }
 }
 
-function moveToPage(pageURL) {
-  chrome.runtime.sendMessage({URL: pageURL});
+// ---------------------------------------------------------------------------
+// Strategy 2 — Scroll through images
+// Triggers scroll-event and IntersectionObserver based lazy loaders.
+// Only effective when the tab is in the foreground, but costs very little.
+// ---------------------------------------------------------------------------
+
+async function scrollThrough(maxImg) {
+  for (let i = 0; i <= maxImg; i++) {
+    const img = document.getElementById('image-' + i);
+    if (img) img.scrollIntoView();
+    await sleep(50);
+  }
+  window.scrollTo(0, 0);
 }
 
+// ---------------------------------------------------------------------------
+// Strategy 3 — Preload via new Image()
+// Works in background tabs: the browser fetches the image even without a
+// viewport. After the preload, we re-set the original element's src so it
+// picks up the now-cached response.
+// ---------------------------------------------------------------------------
 
-const mySeconds = 30, maxImg = getMaxImg();
-const myWait = getWait(mySeconds, maxImg);
-const myTop = getTop(mySeconds, myWait, maxImg);
+function preloadImage(url) {
+  return new Promise(resolve => {
+    if (!url || !url.startsWith('http')) { resolve(false); return; }
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    setTimeout(() => resolve(false), PRELOAD_TIMEOUT_MS);
+    img.src = url;
+  });
+}
 
-
-let i=0, j=0;
-let _autoScoot = setInterval(function() {
-  console.log('img '+ i +'of' + maxImg + '\t|| iter ' + j + 'of' + myTop);
-  if ( j < myTop ){
-    let e = document.getElementById('image-' + i);
-    if (e != null) {
-      e.scrollIntoView();
-      i++;
-    } else {
-      i=0; j++;
-      window.scrollTo(0, 0);
-      if (maxImg > -1) {
-        document.getElementById('image-' + maxImg).scrollIntoView();
-      }
-    };
-  } else {
-    clearInterval(_autoScoot);
-    checkImgData(getImgData());
-    moveToPage(getNextPage());
+function refreshImg(img) {
+  if (!isLoaded(img) && img.src) {
+    const src = img.src;
+    img.src = '';
+    img.src = src;
   }
-}, myWait);
+}
 
-chrome.runtime.onMessage.addListener(
-  function(message, sender, sendResponse) {
-    //
-    if (message.bgStatus != null) {
-      console.log('cs - message.bgStatus:' + message.bgStatus);
+async function preloadUnloaded(maxImg) {
+  const tasks = [];
+  for (let i = 0; i <= maxImg; i++) {
+    const img = document.getElementById('image-' + i);
+    if (img && !isLoaded(img) && img.src && img.src.startsWith('http')) {
+      tasks.push(preloadImage(img.src).then(ok => { if (ok) refreshImg(img); }));
     }
   }
-);
+  if (tasks.length > 0) {
+    console.log('cs - Preloading', tasks.length, 'images...');
+    await Promise.all(tasks);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Orchestrator — runs all strategies then polls for completion
+// ---------------------------------------------------------------------------
+
+async function loadAllImages(maxImg) {
+  const total = maxImg + 1;
+  const startTime = Date.now();
+  let lastLoaded = 0;
+  let stalledRounds = 0;
+
+  // Run strategies in order
+  forceLazyLoad(maxImg);
+  await scrollThrough(maxImg);
+  await preloadUnloaded(maxImg);
+
+  // Poll until every image reports loaded, or we time out
+  while (Date.now() - startTime < LOAD_TIMEOUT_MS) {
+    const loaded = countLoaded(maxImg);
+    console.log('cs -', loaded + '/' + total, 'loaded');
+    if (loaded === total) return true;
+
+    if (loaded === lastLoaded) {
+      stalledRounds++;
+      if (stalledRounds >= 3) {
+        console.log('cs - Stalled, retrying strategies...');
+        forceLazyLoad(maxImg);
+        await preloadUnloaded(maxImg);
+        stalledRounds = 0;
+      }
+    } else {
+      stalledRounds = 0;
+    }
+    lastLoaded = loaded;
+
+    await sleep(POLL_INTERVAL_MS);
+  }
+
+  const finalCount = countLoaded(maxImg);
+  console.log('cs - Timeout.', finalCount + '/' + total, 'loaded.');
+  return finalCount === total;
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
+const maxImg = getMaxImg();
+console.log('cs - Page loaded. Found', maxImg + 1, 'images.');
+
+if (maxImg >= 0) {
+  loadAllImages(maxImg).then(allLoaded => {
+    const nextPage = getNextPage();
+    console.log('cs - Done. All loaded:', allLoaded, '| Next:', nextPage);
+    chrome.runtime.sendMessage({ pageDone: true, nextURL: nextPage });
+  });
+} else {
+  console.log('cs - No images found, moving on.');
+  chrome.runtime.sendMessage({ pageDone: true, nextURL: getNextPage() });
+}

@@ -1,86 +1,78 @@
+'use strict';
+
 /*
-*** Background ***
-******************
+ * Background Service Worker
+ *
+ * Manages a URL queue persisted in chrome.storage.session (survives worker restarts).
+ * Processes one tab at a time: opens URL → content script runs → closes tab → next.
+ *
+ * Modes:
+ *   auto (addToNextTab=true)  — content script's "next chapter" URL is queued automatically
+ *   list (addToNextTab=false) — only URLs from the popup's todo list are processed
+ */
 
-Receive URLs from cs (next chapter) or pu (todo list)
-Add URLs to stack
-Process stack
-  Reset after processing full stack
+async function getState() {
+  return chrome.storage.session.get({ urlStack: [], addToNextTab: true });
+}
 
-Receive toggle from cs on processing next in stack or not and adding new urls or not (in case of given list of non consecutive)
-
-  Receive toggle from cs on processing next in stack similtaneously or successively (do later)
-*/
-
-let urlStack = [] /* urlStack.push(new-URL) to add at the end, urlStack[0] for top of the pile, urlStack.shift() to remove top and shift all others */
-let addToNextTab = true;
-
-function top_of_the_pile_and_scoot() {
-  logItAll('top_of_the_pile_and_scoot in');
-  if (urlStack.length > 0) {
-    console.log('bg - Open tab:' + urlStack[0]);
-    console.log(new Date().toString());
-    chrome.tabs.create({
-      url: urlStack[0]
-    });
-    urlStack.shift();
+async function processNext(closingTabId) {
+  if (closingTabId) {
+    try { await chrome.tabs.remove(closingTabId); } catch (e) { /* already closed */ }
   }
-  logItAll('top_of_the_pile_and_scoot out');
-}
 
-function loadUrlList(urlList) {
-  logItAll('loadUrlList in');
-  let lines = urlList.split('\n');
-  (lines[0] == 'off') ? topline=1000 : topline=50;
-  for (let i=0; i<lines.length && i<topline; i++) {
-    addToUrlList(lines[i]);
+  const { urlStack } = await getState();
+  if (urlStack.length === 0) {
+    console.log('bg - Queue empty.');
+    return;
   }
-  logItAll('loadUrlList out');
+
+  const nextUrl = urlStack.shift();
+  await chrome.storage.session.set({ urlStack });
+  console.log('bg - Opening:', nextUrl, '| Remaining:', urlStack.length);
+  chrome.tabs.create({ url: nextUrl });
 }
 
-function addToUrlList(myUrl) {
-  //logItAll('addToUrlList in');
-  if (myUrl.substring(0, 4) == 'http') {urlStack.push(myUrl);}
-  //logItAll('addToUrlList out');
+async function loadUrlList(text) {
+  const lines = text.split('\n').map(l => l.trim());
+  const noLimit = lines[0] === 'off';
+  const start = noLimit ? 1 : 0;
+  const max = noLimit ? Infinity : 50;
+
+  const urls = [];
+  for (let i = start; i < lines.length && urls.length < max; i++) {
+    if (lines[i].startsWith('http')) urls.push(lines[i]);
+  }
+
+  await chrome.storage.session.set({ urlStack: urls });
+  console.log('bg - Loaded', urls.length, 'URLs');
 }
 
-function logItAll(where) {
-  console.log('bg - ' + where);
-  console.log('addToNextTab:' + addToNextTab + ' || urlStack count:' + urlStack.length);
-  console.log('   urlStack:' + urlStack);
-  //console.log(new Date().toString());
-  console.log(' ');
-}
+chrome.runtime.onMessage.addListener((message, sender) => {
+  (async () => {
+    console.log('bg - Received:', JSON.stringify(message));
 
-chrome.runtime.onMessage.addListener(
-  function(message, sender, sendResponse) {
-    logItAll('message listener in');
-
-    // Stop/Go add to list from the Popup (pu.grab.js) either from Stop Button or the Todo List
+    // Mode control from popup (reset or stop)
     if (message.addToNextTab != null) {
-      console.log('bg - message.addToNextTab:' + message.addToNextTab);
-      if (message.addToNextTab == "stop") {
-        addToNextTab = false;
-      } else {
-        addToNextTab = true;
-      }
-      urlStack.length = 0;
+      const addToNextTab = message.addToNextTab !== 'stop';
+      await chrome.storage.session.set({ addToNextTab, urlStack: [] });
+      console.log('bg - Mode:', addToNextTab ? 'auto' : 'list');
     }
 
-    // Next URL coming from Content-Script (cs.grab.js)
-    // Every time a page is done a message is sent to prompt a next page if relevant
-    if (message.URL != null) {
-      console.log('bg - message.URL:' + message.URL);
-      if (addToNextTab) {addToUrlList(message.URL);}
-      top_of_the_pile_and_scoot();
-    }
-
-    // URL list from the Popup (pu.grab.js)
+    // URL list from popup
     if (message.urlList != null) {
-      console.log('bg - message.urlList:' + message.urlList);
-      loadUrlList(message.urlList);
-      top_of_the_pile_and_scoot();
+      await loadUrlList(message.urlList);
+      processNext(null);
+      return;
     }
-    logItAll('message listener out');
-  }
-);
+
+    // Content script signals page is done
+    if (message.pageDone) {
+      const { addToNextTab, urlStack } = await getState();
+      if (addToNextTab && message.nextURL && message.nextURL.startsWith('http')) {
+        urlStack.push(message.nextURL);
+        await chrome.storage.session.set({ urlStack });
+      }
+      processNext(sender.tab?.id);
+    }
+  })();
+});

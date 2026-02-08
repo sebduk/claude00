@@ -1,28 +1,20 @@
-function resetAll() {
-  console.log('pu - resetAll');
-  addToNextTab = true;
-  chrome.runtime.sendMessage({addToNextTab: 'go', URL: ''});
-  //set_color();
-}
-
-function doTodoList() {
-  if (txtTodoList.value != '' && txtTodoList.value != 'Nothing in your list.') {
-    console.log('pu - Send list to background.');
-    console.log(txtTodoList.value);
-    addToNextTab = false;
-    chrome.runtime.sendMessage({addToNextTab: 'stop', urlList: txtTodoList.value});
-  } else {
-    console.log('pu - Nothing in your list.');
-    txtTodoList.value = 'Nothing in your list.';
-  }
-  //set_color();
-}
+'use strict';
 
 const btnReset = document.getElementById('btnReset');
 const txtTodoList = document.getElementById('txtTodoList');
 const btnTodoList = document.getElementById('btnTodoList');
 
-let goToNextTab = null, addToNextTab = null, i = 0;
+btnReset.addEventListener('click', () => {
+  console.log('pu - Reset');
+  chrome.runtime.sendMessage({ addToNextTab: 'go' });
+});
 
-btnReset.addEventListener('click', e=> {resetAll()});
-btnTodoList.addEventListener('click', e=> {doTodoList()});
+btnTodoList.addEventListener('click', () => {
+  const text = txtTodoList.value.trim();
+  if (!text || text === 'Nothing in your list.') {
+    txtTodoList.value = 'Nothing in your list.';
+    return;
+  }
+  console.log('pu - Sending list to background');
+  chrome.runtime.sendMessage({ addToNextTab: 'stop', urlList: text });
+});
