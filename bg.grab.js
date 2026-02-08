@@ -15,8 +15,47 @@ async function getState() {
   return chrome.storage.session.get({ urlStack: [], addToNextTab: true });
 }
 
+async function savePageToDisk(tabId) {
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    const blob = await chrome.pageCapture.saveAsMHTML({ tabId });
+    const url = URL.createObjectURL(blob);
+
+    // Derive filename from URL path: /read/manga-name/chapter-1 → webtoons/manga-name/chapter-1.mhtml
+    const urlPath = new URL(tab.url).pathname;
+    const pathParts = urlPath.replace(/^\/read\//, '').replace(/\/$/, '');
+    const safeName = pathParts.replace(/[<>:"|?*]/g, '_');
+    const filename = 'webtoons/' + safeName + '.mhtml';
+
+    const downloadId = await chrome.downloads.download({
+      url: url,
+      filename: filename,
+      conflictAction: 'uniquify'
+    });
+
+    // Wait for the download to finish before moving on
+    await new Promise(resolve => {
+      function listener(delta) {
+        if (delta.id === downloadId && delta.state) {
+          chrome.downloads.onChanged.removeListener(listener);
+          resolve();
+        }
+      }
+      chrome.downloads.onChanged.addListener(listener);
+      // Safety timeout so we never hang forever
+      setTimeout(() => { chrome.downloads.onChanged.removeListener(listener); resolve(); }, 30000);
+    });
+
+    URL.revokeObjectURL(url);
+    console.log('bg - Saved:', filename);
+  } catch (e) {
+    console.log('bg - Save failed:', e);
+  }
+}
+
 async function processNext(closingTabId) {
   if (closingTabId) {
+    await savePageToDisk(closingTabId);
     try { await chrome.tabs.remove(closingTabId); } catch (e) { /* already closed */ }
   }
 
