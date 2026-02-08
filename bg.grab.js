@@ -60,7 +60,10 @@ async function savePageToDisk(tabId) {
 async function processNext(closingTabId) {
   if (closingTabId) {
     await savePageToDisk(closingTabId);
-    try { await chrome.tabs.remove(closingTabId); } catch (e) { /* already closed */ }
+    const { autoCloseTabs } = await chrome.storage.local.get({ autoCloseTabs: false });
+    if (autoCloseTabs) {
+      try { await chrome.tabs.remove(closingTabId); } catch (e) { /* already closed */ }
+    }
   }
 
   const { urlStack } = await getState();
