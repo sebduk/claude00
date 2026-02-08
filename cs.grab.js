@@ -11,6 +11,9 @@
 const LOAD_TIMEOUT_MS = 60000;
 const POLL_INTERVAL_MS = 2000;
 const PRELOAD_TIMEOUT_MS = 15000;
+const DOM_WAIT_TIMEOUT_MS = 15000; // max wait for page JS to create image elements
+const DOM_WAIT_POLL_MS = 500;
+const DOM_SETTLE_MS = 2000; // extra wait after first image appears for the rest
 
 // ---------------------------------------------------------------------------
 // DOM helpers
@@ -21,6 +24,21 @@ function getMaxImg() {
     if (!document.getElementById('image-' + i)) return i - 1;
   }
   return 499;
+}
+
+// Wait for the page's own JS to inject image-0 into the DOM
+async function waitForImages() {
+  const deadline = Date.now() + DOM_WAIT_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    if (document.getElementById('image-0')) {
+      // image-0 exists — give the page a moment to finish creating the rest
+      await sleep(DOM_SETTLE_MS);
+      return getMaxImg();
+    }
+    await sleep(DOM_WAIT_POLL_MS);
+  }
+  // Last resort: maybe they appeared in the final instant
+  return getMaxImg();
 }
 
 function getNextPage() {
@@ -51,17 +69,33 @@ function sleep(ms) {
 // Works in background tabs. Handles data-src, data-lazy-src, data-original, etc.
 // ---------------------------------------------------------------------------
 
+function looksLikeUrl(val) {
+  return val && (val.startsWith('http') || val.startsWith('//'));
+}
+
 function forceLazyLoad(maxImg) {
   const lazyAttrs = ['data-src', 'data-lazy-src', 'data-original', 'data-url'];
   for (let i = 0; i <= maxImg; i++) {
     const img = document.getElementById('image-' + i);
     if (!img) continue;
     img.loading = 'eager';
+
+    // Check standard lazy-load data attributes
+    let found = false;
     for (const attr of lazyAttrs) {
       const val = img.getAttribute(attr);
-      if (val && val.startsWith('http')) {
+      if (looksLikeUrl(val)) {
         img.src = val;
+        found = true;
         break;
+      }
+    }
+    // Fallback: pull first URL from data-srcset or srcset
+    if (!found && !looksLikeUrl(img.getAttribute('src'))) {
+      const srcset = img.getAttribute('data-srcset') || img.getAttribute('srcset');
+      if (srcset) {
+        const first = srcset.split(',')[0].trim().split(/\s+/)[0];
+        if (looksLikeUrl(first)) img.src = first;
       }
     }
   }
@@ -91,7 +125,7 @@ async function scrollThrough(maxImg) {
 
 function preloadImage(url) {
   return new Promise(resolve => {
-    if (!url || !url.startsWith('http')) { resolve(false); return; }
+    if (!looksLikeUrl(url)) { resolve(false); return; }
     const img = new Image();
     img.onload = () => resolve(true);
     img.onerror = () => resolve(false);
@@ -112,7 +146,7 @@ async function preloadUnloaded(maxImg) {
   const tasks = [];
   for (let i = 0; i <= maxImg; i++) {
     const img = document.getElementById('image-' + i);
-    if (img && !isLoaded(img) && img.src && img.src.startsWith('http')) {
+    if (img && !isLoaded(img) && looksLikeUrl(img.src)) {
       tasks.push(preloadImage(img.src).then(ok => { if (ok) refreshImg(img); }));
     }
   }
@@ -165,19 +199,20 @@ async function loadAllImages(maxImg) {
 }
 
 // ---------------------------------------------------------------------------
-// Main
+// Main — wait for the page's JS to inject image elements, then load them
 // ---------------------------------------------------------------------------
 
-const maxImg = getMaxImg();
-console.log('cs - Page loaded. Found', maxImg + 1, 'images.');
+(async () => {
+  const maxImg = await waitForImages();
+  console.log('cs - Page ready. Found', maxImg + 1, 'images.');
 
-if (maxImg >= 0) {
-  loadAllImages(maxImg).then(allLoaded => {
+  if (maxImg >= 0) {
+    const allLoaded = await loadAllImages(maxImg);
     const nextPage = getNextPage();
     console.log('cs - Done. All loaded:', allLoaded, '| Next:', nextPage);
     chrome.runtime.sendMessage({ pageDone: true, nextURL: nextPage });
-  });
-} else {
-  console.log('cs - No images found, moving on.');
-  chrome.runtime.sendMessage({ pageDone: true, nextURL: getNextPage() });
-}
+  } else {
+    console.log('cs - No images found, moving on.');
+    chrome.runtime.sendMessage({ pageDone: true, nextURL: getNextPage() });
+  }
+})();
