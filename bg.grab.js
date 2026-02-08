@@ -21,11 +21,15 @@ async function savePageToDisk(tabId) {
     const blob = await chrome.pageCapture.saveAsMHTML({ tabId });
     const url = URL.createObjectURL(blob);
 
-    // Derive filename from URL path: /read/manga-name/chapter-1 → webtoons/manga-name/chapter-1.mhtml
+    // Read user-configured folder (persisted in chrome.storage.local)
+    const { saveFolder } = await chrome.storage.local.get({ saveFolder: 'webtoons' });
+    const folder = saveFolder.replace(/\/+$/, ''); // strip trailing slashes
+
+    // Derive filename from URL path: /read/manga-name/chapter-1 → <folder>/manga-name/chapter-1.mhtml
     const urlPath = new URL(tab.url).pathname;
     const pathParts = urlPath.replace(/^\/read\//, '').replace(/\/$/, '');
     const safeName = pathParts.replace(/[<>:"|?*]/g, '_');
-    const filename = 'webtoons/' + safeName + '.mhtml';
+    const filename = (folder ? folder + '/' : '') + safeName + '.mhtml';
 
     const downloadId = await chrome.downloads.download({
       url: url,

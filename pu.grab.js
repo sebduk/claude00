@@ -3,6 +3,18 @@
 const btnReset = document.getElementById('btnReset');
 const txtTodoList = document.getElementById('txtTodoList');
 const btnTodoList = document.getElementById('btnTodoList');
+const txtSaveFolder = document.getElementById('txtSaveFolder');
+
+// Load saved folder on popup open
+chrome.storage.local.get({ saveFolder: 'webtoons' }, (result) => {
+  txtSaveFolder.value = result.saveFolder;
+});
+
+// Persist folder setting on change
+txtSaveFolder.addEventListener('input', () => {
+  const folder = txtSaveFolder.value.trim();
+  chrome.storage.local.set({ saveFolder: folder });
+});
 
 btnReset.addEventListener('click', () => {
   console.log('pu - Reset');
