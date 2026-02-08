@@ -554,6 +554,20 @@ body {
   flex: 1;
 }
 
+.import-day-header {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--accent);
+  padding: 8px 0 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
+
+.import-day-header:first-child {
+  margin-top: 0;
+}
+
 /* Toast */
 .toast {
   position: fixed;
@@ -667,6 +681,23 @@ body::-webkit-scrollbar-thumb:hover {
 
 .inline-add-btn:hover {
   background: #5b4bd4;
+}
+
+.inline-ai-btn {
+  background: var(--warning);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  width: 36px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.inline-ai-btn:hover {
+  background: #e6c421;
 }
 
 /* Suggestions dropdown */

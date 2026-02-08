@@ -5,6 +5,13 @@
  */
 
 const FoodDB = {
+  // Custom foods learned from AI estimates (populated from storage on init)
+  _customFoods: [],
+
+  setCustomFoods(foods) {
+    this._customFoods = foods || [];
+  },
+
   // ── Database ──
   foods: [
     // Proteins
@@ -215,21 +222,24 @@ const FoodDB = {
 
   /**
    * Find the best matching food entry using fuzzy matching.
+   * Checks custom foods (learned from AI) first, then built-in DB.
    */
   findFood(text) {
     text = text.toLowerCase().trim();
     if (!text) return null;
 
+    const allFoods = [...this._customFoods, ...this.foods];
+
     // Exact match
-    let match = this.foods.find(f => f.name === text);
+    let match = allFoods.find(f => f.name === text);
     if (match) return match;
 
     // Starts-with match
-    match = this.foods.find(f => f.name.startsWith(text) || text.startsWith(f.name));
+    match = allFoods.find(f => f.name.startsWith(text) || text.startsWith(f.name));
     if (match) return match;
 
     // Contains match (prefer shorter names = more specific)
-    const containsMatches = this.foods
+    const containsMatches = allFoods
       .filter(f => f.name.includes(text) || text.includes(f.name))
       .sort((a, b) => {
         // Prefer the one where the match is tighter
@@ -239,27 +249,44 @@ const FoodDB = {
       });
     if (containsMatches.length > 0) return containsMatches[0];
 
-    // Word overlap scoring
+    // Word overlap scoring (improved to avoid false positives like "mixed veggies" → "trail mix")
     const queryWords = text.split(/\s+/);
     let bestScore = 0;
     let bestMatch = null;
 
-    for (const food of this.foods) {
+    for (const food of allFoods) {
       const foodWords = food.name.split(/\s+/);
       let score = 0;
+      let matchedQueryWords = 0;
+
       for (const qw of queryWords) {
+        let bestWordScore = 0;
         for (const fw of foodWords) {
-          if (fw === qw) score += 3;
-          else if (fw.startsWith(qw) || qw.startsWith(fw)) score += 2;
-          else if (fw.includes(qw) || qw.includes(fw)) score += 1;
+          if (fw === qw) {
+            bestWordScore = Math.max(bestWordScore, 3);
+          } else if (fw.startsWith(qw) || qw.startsWith(fw)) {
+            // Only count prefix match if shorter word is at least 4 chars
+            // This prevents "mix" matching "mixed" via "trail mix"
+            const shorter = fw.length < qw.length ? fw : qw;
+            if (shorter.length >= 4) bestWordScore = Math.max(bestWordScore, 2);
+          }
         }
+        score += bestWordScore;
+        if (bestWordScore > 0) matchedQueryWords++;
       }
-      if (score > bestScore) {
-        bestScore = score;
+
+      // Require at least half of query words to have a match
+      if (matchedQueryWords / queryWords.length < 0.5) continue;
+
+      // Normalize by query word count for fair comparison
+      const normalizedScore = score / queryWords.length;
+      if (normalizedScore > bestScore) {
+        bestScore = normalizedScore;
         bestMatch = food;
       }
     }
 
+    // Require normalized score >= 2 (meaningful match on most words)
     return bestScore >= 2 ? bestMatch : null;
   },
 
@@ -354,7 +381,8 @@ const FoodDB = {
     const { foodText } = this.parseQuantity(partial);
     const search = foodText || partial;
 
-    const scored = this.foods.map(f => {
+    const allFoods = [...this._customFoods, ...this.foods];
+    const scored = allFoods.map(f => {
       let score = 0;
       if (f.name === search) score = 100;
       else if (f.name.startsWith(search)) score = 80;

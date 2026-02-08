@@ -52,14 +52,26 @@ const Storage = {
     await this.saveDayData(dateStr, data);
   },
 
-  // Import multiple food entries at once
+  // Import multiple food entries at once (preserves existing timestamps)
   async importFoods(dateStr, foods) {
     const data = await this.getDayData(dateStr);
     for (const food of foods) {
       food.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 4);
-      food.timestamp = new Date().toISOString();
+      if (!food.timestamp) food.timestamp = new Date().toISOString();
       food.imported = true;
       data.foods.push(food);
+    }
+    await this.saveDayData(dateStr, data);
+  },
+
+  // Import multiple exercise entries at once (preserves existing timestamps)
+  async importExercises(dateStr, exercises) {
+    const data = await this.getDayData(dateStr);
+    for (const exercise of exercises) {
+      exercise.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 4);
+      if (!exercise.timestamp) exercise.timestamp = new Date().toISOString();
+      exercise.imported = true;
+      data.exercises.push(exercise);
     }
     await this.saveDayData(dateStr, data);
   },
@@ -135,6 +147,32 @@ const Storage = {
     let presets = await this.getMealPresets();
     presets = presets.filter(p => p.id !== id);
     await this.saveMealPresets(presets);
+  },
+
+  // ── Custom Foods (learned from AI estimates) ──
+  async getCustomFoods() {
+    const result = await chrome.storage.local.get('customFoods');
+    return result.customFoods || [];
+  },
+
+  async addCustomFood(food) {
+    let foods = await this.getCustomFoods();
+    // Remove existing entry with same name (case-insensitive)
+    foods = foods.filter(f => f.name.toLowerCase() !== food.name.toLowerCase());
+    foods.unshift({
+      name: food.name.toLowerCase(),
+      kcal: Number(food.kcal) || 0,
+      protein: Number(food.protein) || 0,
+      carbs: Number(food.carbs) || 0,
+      fat: Number(food.fat) || 0,
+      serving: food.serving || '',
+      per: 1,
+      unit: food.serving || 'serving',
+      custom: true
+    });
+    // Keep max 100 custom foods
+    foods = foods.slice(0, 100);
+    await chrome.storage.local.set({ customFoods: foods });
   },
 
   // Quick exercises

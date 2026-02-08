@@ -9,11 +9,14 @@
   // ── State ──
   let currentDate = Storage.today();
   let targets = await Storage.getTargets();
-  let pendingImport = [];
+  let pendingImport = { days: {} };
   let currentLookup = null;  // Current food-db lookup result
   let suggestIndex = -1;     // Active suggestion index for keyboard nav
 
   // ── Init ──
+  // Load custom foods from storage into FoodDB for local matching
+  FoodDB.setCustomFoods(await Storage.getCustomFoods());
+
   initTabs();
   initDateNav();
   initTimePickers();
@@ -285,6 +288,11 @@
       }
     });
 
+    // AI button: force LLM estimation bypassing local DB
+    document.getElementById('food-input-ai').addEventListener('click', () => {
+      forceAIEstimate();
+    });
+
     // Preview: Add This
     document.getElementById('preview-add').addEventListener('click', () => addCurrentLookup());
 
@@ -506,10 +514,60 @@
   async function addCurrentLookup() {
     if (!currentLookup) return;
     const r = currentLookup.result;
+
+    // Save AI estimates to custom foods DB for future local lookups
+    if (currentLookup.estimated) {
+      await Storage.addCustomFood(r);
+      FoodDB.setCustomFoods(await Storage.getCustomFoods());
+    }
+
     await Storage.addFood(currentDate, { ...r, timestamp: getTimestamp('food-time') });
     await refreshDashboard();
     resetFoodInput();
-    showToast(`Added ${r.name}`, 'success');
+    showToast(`Added ${r.name}${currentLookup.estimated ? ' (saved to DB)' : ''}`, 'success');
+  }
+
+  /**
+   * Force AI estimation, bypassing local DB entirely.
+   */
+  async function forceAIEstimate() {
+    const text = document.getElementById('food-input').value.trim();
+    if (!text) return;
+
+    const llmAvailable = await LLMEstimator.isAvailable();
+    if (!llmAvailable) {
+      showToast('Configure AI in Settings first', 'warning');
+      return;
+    }
+
+    if (isEstimating) return;
+    isEstimating = true;
+
+    hideAllPreviews();
+    hideSuggestions();
+    document.getElementById('food-estimating').classList.remove('hidden');
+
+    try {
+      const result = await LLMEstimator.estimate(text);
+      document.getElementById('food-estimating').classList.add('hidden');
+
+      if (result) {
+        currentLookup = { result, estimated: true };
+        showFoodPreview(currentLookup, true);
+      } else {
+        document.getElementById('food-no-match').classList.remove('hidden');
+        document.getElementById('manual-name').value = text;
+      }
+    } catch (err) {
+      document.getElementById('food-estimating').classList.add('hidden');
+      document.getElementById('food-estimate-error').classList.remove('hidden');
+      document.getElementById('estimate-error-msg').textContent =
+        `AI estimation failed: ${err.message}`;
+      document.getElementById('food-no-match').classList.remove('hidden');
+      document.getElementById('manual-name').value = text;
+    } finally {
+      isEstimating = false;
+    }
   }
 
   function resetFoodInput() {
@@ -689,14 +747,18 @@
     });
   }
 
-  // ── Import Form ──
+  // ── Import Form (multi-day with exercises) ──
   function initImportForm() {
     document.getElementById('import-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const text = document.getElementById('import-data').value;
       pendingImport = ImportParser.parse(text);
-      if (pendingImport.length === 0) {
-        showToast('No food entries found. Check the supported formats.', 'warning');
+
+      const totalFoods = Object.values(pendingImport.days).reduce((s, d) => s + d.foods.length, 0);
+      const totalExercises = Object.values(pendingImport.days).reduce((s, d) => s + d.exercises.length, 0);
+
+      if (totalFoods === 0 && totalExercises === 0) {
+        showToast('No entries found. Check the supported formats.', 'warning');
         return;
       }
       renderImportPreview(pendingImport);
@@ -705,36 +767,125 @@
     document.getElementById('import-date').value = currentDate;
 
     document.getElementById('import-confirm').addEventListener('click', async () => {
-      const importDate = document.getElementById('import-date').value || currentDate;
-      const count = pendingImport.length;
-      await Storage.importFoods(importDate, pendingImport);
-      currentDate = importDate;
+      const fallbackDate = document.getElementById('import-date').value || currentDate;
+      let totalCount = 0;
+
+      for (const [dateKey, dayData] of Object.entries(pendingImport.days)) {
+        const targetDate = dateKey === '_default' ? fallbackDate : dateKey;
+
+        // Resolve timeHints to proper timestamps
+        const foods = dayData.foods.map(f => {
+          const food = { ...f };
+          if (food.timeHint) {
+            const [h, m] = food.timeHint.split(':').map(Number);
+            const d = new Date(targetDate + 'T12:00:00');
+            d.setHours(h, m, 0, 0);
+            food.timestamp = d.toISOString();
+            delete food.timeHint;
+          }
+          return food;
+        });
+
+        const exercises = dayData.exercises.map(e => {
+          const ex = { ...e };
+          if (ex.timeHint) {
+            const [h, m] = ex.timeHint.split(':').map(Number);
+            const d = new Date(targetDate + 'T12:00:00');
+            d.setHours(h, m, 0, 0);
+            ex.timestamp = d.toISOString();
+            delete ex.timeHint;
+          }
+          return ex;
+        });
+
+        if (foods.length > 0) await Storage.importFoods(targetDate, foods);
+        if (exercises.length > 0) await Storage.importExercises(targetDate, exercises);
+        totalCount += foods.length + exercises.length;
+      }
+
+      // Navigate to the most relevant date
+      const days = Object.keys(pendingImport.days).sort();
+      currentDate = days.includes('_default') ? fallbackDate : (days[days.length - 1] || fallbackDate);
       renderDate();
-      pendingImport = [];
+      pendingImport = { days: {} };
       document.getElementById('import-preview').classList.add('hidden');
       document.getElementById('import-data').value = '';
       await refreshDashboard();
-      showToast(`Imported ${count} items`, 'success');
+      showToast(`Imported ${totalCount} items`, 'success');
       document.querySelector('.tab[data-tab="dashboard"]').click();
     });
 
     document.getElementById('import-cancel').addEventListener('click', () => {
-      pendingImport = [];
+      pendingImport = { days: {} };
       document.getElementById('import-preview').classList.add('hidden');
     });
   }
 
-  function renderImportPreview(items) {
+  function renderImportPreview(result) {
     const container = document.getElementById('import-items');
-    document.getElementById('import-count').textContent = items.length;
-    container.innerHTML = items.map(food =>
-      `<div class="log-item">
-        <div class="log-item-info">
-          <span class="log-item-name">${escapeHtml(food.name)}</span>
-          <span class="log-item-macros">${Math.round(food.kcal)} kcal | P: ${Number(food.protein).toFixed(1)}g | C: ${Number(food.carbs).toFixed(1)}g | F: ${Number(food.fat).toFixed(1)}g</span>
-        </div>
-      </div>`
-    ).join('');
+    const days = result.days;
+    const dayKeys = Object.keys(days).sort();
+
+    let totalFoods = 0;
+    let totalExercises = 0;
+    let html = '';
+
+    for (const dateKey of dayKeys) {
+      const day = days[dateKey];
+      totalFoods += day.foods.length;
+      totalExercises += day.exercises.length;
+
+      // Day header
+      let dateLabel;
+      if (dateKey === '_default') {
+        const importDate = document.getElementById('import-date').value;
+        dateLabel = `Import date (${importDate})`;
+      } else {
+        const d = new Date(dateKey + 'T12:00:00');
+        dateLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+      }
+
+      if (dayKeys.length > 1 || dateKey !== '_default') {
+        html += `<div class="import-day-header">${dateLabel}</div>`;
+      }
+
+      // Foods
+      for (const food of day.foods) {
+        const time = food.timeHint || (food.timestamp ? new Date(food.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '');
+        html += `
+          <div class="log-item">
+            <div class="log-item-info">
+              <span class="log-item-name">${escapeHtml(food.name)}</span>
+              <span class="log-item-macros">${Math.round(food.kcal)} kcal | P: ${Number(food.protein).toFixed(1)}g | C: ${Number(food.carbs).toFixed(1)}g | F: ${Number(food.fat).toFixed(1)}g</span>
+            </div>
+            ${time ? `<span class="log-item-time">${time}</span>` : ''}
+          </div>`;
+      }
+
+      // Exercises
+      for (const ex of day.exercises) {
+        const time = ex.timeHint || (ex.timestamp ? new Date(ex.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '');
+        html += `
+          <div class="log-item exercise-item">
+            <div class="log-item-info">
+              <span class="log-item-name">${escapeHtml(ex.name)}</span>
+              <span class="log-item-macros">${ex.duration} min | ${ex.calories} kcal burned${ex.notes ? ' | ' + escapeHtml(ex.notes) : ''}</span>
+            </div>
+            ${time ? `<span class="log-item-time">${time}</span>` : ''}
+          </div>`;
+      }
+    }
+
+    container.innerHTML = html;
+
+    // Update count text
+    const parts = [];
+    if (totalFoods > 0) parts.push(`${totalFoods} food${totalFoods > 1 ? 's' : ''}`);
+    if (totalExercises > 0) parts.push(`${totalExercises} exercise${totalExercises > 1 ? 's' : ''}`);
+    const dayCount = dayKeys.filter(k => k !== '_default').length;
+    if (dayCount > 1) parts.push(`${dayCount} days`);
+    document.getElementById('import-count').textContent = parts.join(', ');
+
     document.getElementById('import-preview').classList.remove('hidden');
   }
 
