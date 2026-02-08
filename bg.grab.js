@@ -15,11 +15,23 @@ async function getState() {
   return chrome.storage.session.get({ urlStack: [], addToNextTab: true });
 }
 
+// Convert a Blob to a data: URL (MV3 service workers lack URL.createObjectURL)
+async function blobToDataUrl(blob) {
+  const buf = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  const CHUNK = 0x8000; // 32 KB — safe for String.fromCharCode.apply
+  const chunks = [];
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK)));
+  }
+  return 'data:application/x-mimearchive;base64,' + btoa(chunks.join(''));
+}
+
 async function savePageToDisk(tabId) {
   try {
     const tab = await chrome.tabs.get(tabId);
     const blob = await chrome.pageCapture.saveAsMHTML({ tabId });
-    const url = URL.createObjectURL(blob);
+    const dataUrl = await blobToDataUrl(blob);
 
     // Read user-configured folder (persisted in chrome.storage.local)
     const { saveFolder } = await chrome.storage.local.get({ saveFolder: 'webtoons' });
@@ -32,7 +44,7 @@ async function savePageToDisk(tabId) {
     const filename = (folder ? folder + '/' : '') + safeName + '.mhtml';
 
     const downloadId = await chrome.downloads.download({
-      url: url,
+      url: dataUrl,
       filename: filename,
       conflictAction: 'uniquify'
     });
@@ -50,7 +62,6 @@ async function savePageToDisk(tabId) {
       setTimeout(() => { chrome.downloads.onChanged.removeListener(listener); resolve(); }, 30000);
     });
 
-    URL.revokeObjectURL(url);
     console.log('bg - Saved:', filename);
   } catch (e) {
     console.log('bg - Save failed:', e);
