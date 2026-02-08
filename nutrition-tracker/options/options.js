@@ -31,7 +31,7 @@
   // ── LLM Config ──
 
   const HELP_TEXT = {
-    gemini: 'Get a free API key from <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>. The free tier gives you 15 requests/minute - more than enough for food tracking.',
+    gemini: 'Get a free API key from <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>. Default model: gemini-2.0-flash-lite (free tier). You can override with gemini-1.5-flash or gemini-2.0-flash if your plan supports it.',
     openai: 'Get an API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>. Uses GPT-4o-mini by default (~$0.15/M tokens).',
     anthropic: 'Get an API key from <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a>. Uses Claude Haiku by default (~$0.25/M tokens).'
   };
@@ -59,8 +59,7 @@
     if (provider) {
       keySection.classList.remove('hidden');
       helpText.innerHTML = HELP_TEXT[provider] || '';
-      // Show model override for openai/anthropic
-      modelGroup.style.display = (provider === 'openai' || provider === 'anthropic') ? 'block' : 'none';
+      modelGroup.style.display = provider ? 'block' : 'none';
     } else {
       keySection.classList.add('hidden');
     }
@@ -107,7 +106,8 @@
     const prompt = 'Estimate the nutritional macros for this food. Return ONLY a JSON object.\n\nFood: "1 banana"\n\nReturn exactly this JSON format, nothing else:\n{"name":"banana","kcal":89,"protein":1.1,"carbs":23,"fat":0.3,"serving":"1 medium banana"}';
 
     if (provider === 'gemini') {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+      const geminiModel = model || 'gemini-2.0-flash-lite';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -16,6 +16,7 @@
   // ── Init ──
   initTabs();
   initDateNav();
+  initTimePickers();
   initSmartFoodInput();
   await initMealPresets();
   await initQuickExercises();
@@ -27,6 +28,32 @@
   document.getElementById('btn-settings').addEventListener('click', () => {
     chrome.runtime.openOptionsPage();
   });
+
+  // ── Time Pickers ──
+  function initTimePickers() {
+    setTimeToNow('food-time');
+    setTimeToNow('exercise-time');
+  }
+
+  function setTimeToNow(inputId) {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById(inputId).value = `${hh}:${mm}`;
+  }
+
+  /**
+   * Build an ISO timestamp from a time input value (HH:MM) and the current viewing date.
+   * Returns an ISO string like "2026-02-08T14:30:00.000Z" (in local time).
+   */
+  function getTimestamp(timeInputId) {
+    const timeVal = document.getElementById(timeInputId).value;
+    if (!timeVal) return new Date().toISOString();
+    const [hours, minutes] = timeVal.split(':').map(Number);
+    const d = new Date(currentDate + 'T12:00:00'); // use the viewed date
+    d.setHours(hours, minutes, 0, 0);
+    return d.toISOString();
+  }
 
   // ── Tab Navigation ──
   function initTabs() {
@@ -281,7 +308,8 @@
         protein: Number(document.getElementById('override-protein').value) || 0,
         carbs: Number(document.getElementById('override-carbs').value) || 0,
         fat: Number(document.getElementById('override-fat').value) || 0,
-        serving: currentLookup.result.serving
+        serving: currentLookup.result.serving,
+        timestamp: getTimestamp('food-time')
       };
       await Storage.addFood(currentDate, food);
       await refreshDashboard();
@@ -299,7 +327,8 @@
         protein: Number(document.getElementById('manual-protein').value) || 0,
         carbs: Number(document.getElementById('manual-carbs').value) || 0,
         fat: Number(document.getElementById('manual-fat').value) || 0,
-        serving: ''
+        serving: '',
+        timestamp: getTimestamp('food-time')
       };
       await Storage.addFood(currentDate, food);
       await refreshDashboard();
@@ -477,7 +506,7 @@
   async function addCurrentLookup() {
     if (!currentLookup) return;
     const r = currentLookup.result;
-    await Storage.addFood(currentDate, { ...r });
+    await Storage.addFood(currentDate, { ...r, timestamp: getTimestamp('food-time') });
     await refreshDashboard();
     resetFoodInput();
     showToast(`Added ${r.name}`, 'success');
@@ -488,6 +517,7 @@
     currentLookup = null;
     hideAllPreviews();
     hideSuggestions();
+    setTimeToNow('food-time');
   }
 
   // ══════════════════════════
@@ -528,7 +558,8 @@
         protein: preset.protein,
         carbs: preset.carbs,
         fat: preset.fat,
-        serving: preset.description || ''
+        serving: preset.description || '',
+        timestamp: getTimestamp('food-time')
       });
       await refreshDashboard();
       showToast(`Added ${preset.name}`, 'success');
@@ -613,7 +644,7 @@
       const item = e.target.closest('.recent-item');
       if (!item) return;
       const food = recent[item.dataset.index];
-      await Storage.addFood(currentDate, { ...food });
+      await Storage.addFood(currentDate, { ...food, timestamp: getTimestamp('food-time') });
       await refreshDashboard();
       showToast(`Added ${food.name}`, 'success');
     });
@@ -631,7 +662,8 @@
       const btn = e.target.closest('.quick-item');
       if (!btn) return;
       const ex = quickExercises[btn.dataset.index];
-      await Storage.addExercise(currentDate, { ...ex });
+      await Storage.addExercise(currentDate, { ...ex, timestamp: getTimestamp('exercise-time') });
+      setTimeToNow('exercise-time');
       await refreshDashboard();
       showToast(`Added ${ex.name}`, 'success');
     });
@@ -645,10 +677,12 @@
         name: document.getElementById('exercise-name').value.trim(),
         duration: Number(document.getElementById('exercise-duration').value),
         calories: Number(document.getElementById('exercise-calories').value),
-        notes: document.getElementById('exercise-notes').value.trim()
+        notes: document.getElementById('exercise-notes').value.trim(),
+        timestamp: getTimestamp('exercise-time')
       };
       await Storage.addExercise(currentDate, exercise);
       e.target.reset();
+      setTimeToNow('exercise-time');
       await refreshDashboard();
       showToast(`Added ${exercise.name}`, 'success');
       document.querySelector('.tab[data-tab="dashboard"]').click();

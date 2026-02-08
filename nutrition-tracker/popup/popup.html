@@ -120,6 +120,13 @@
             <input type="text" id="food-input" placeholder="e.g. chicken breast 150g, 2 eggs, banana..." autocomplete="off">
             <button id="food-input-add" class="inline-add-btn" title="Add">+</button>
           </div>
+        </div>
+
+        <!-- Time picker for food entries -->
+        <div class="time-picker-row">
+          <label for="food-time">Time</label>
+          <input type="time" id="food-time">
+        </div>
           <!-- Autocomplete dropdown -->
           <div id="food-suggestions" class="suggestions-dropdown hidden"></div>
         </div>
@@ -220,6 +227,12 @@
     <!-- Log Exercise Tab -->
     <section id="tab-log-exercise" class="tab-content">
       <h2>Log Exercise</h2>
+
+      <!-- Time picker for exercise entries -->
+      <div class="time-picker-row">
+        <label for="exercise-time">Time</label>
+        <input type="time" id="exercise-time">
+      </div>
 
       <!-- Quick Add Exercises -->
       <div class="quick-add">

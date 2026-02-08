@@ -17,11 +17,11 @@ const Storage = {
     await chrome.storage.local.set({ [key]: { ...data, date: dateStr } });
   },
 
-  // Add a food entry
+  // Add a food entry. If food.timestamp is already set, it is preserved.
   async addFood(dateStr, food) {
     const data = await this.getDayData(dateStr);
     food.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    food.timestamp = new Date().toISOString();
+    if (!food.timestamp) food.timestamp = new Date().toISOString();
     data.foods.push(food);
     await this.saveDayData(dateStr, data);
     await this.addToRecentFoods(food);
@@ -35,11 +35,11 @@ const Storage = {
     await this.saveDayData(dateStr, data);
   },
 
-  // Add an exercise entry
+  // Add an exercise entry. If exercise.timestamp is already set, it is preserved.
   async addExercise(dateStr, exercise) {
     const data = await this.getDayData(dateStr);
     exercise.id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    exercise.timestamp = new Date().toISOString();
+    if (!exercise.timestamp) exercise.timestamp = new Date().toISOString();
     data.exercises.push(exercise);
     await this.saveDayData(dateStr, data);
     return exercise;
