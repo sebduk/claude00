@@ -272,33 +272,8 @@ with DatabaseManager("face_recognition.db") as db:
 - **Filter** by clip type (known/unknown)
 - **Filter** by individual
 - **Search** by filename or person name
-- **Sort** by individual name, filename, duration, dimensions, size, date
+- **Sort** by date, filename, size, dimensions, duration
 - **Pagination** with configurable items per page (25, 50, 100, 200)
-- **Toggle view mode** between thumbnails and mosaics
-- **Hover overlay** shows mosaic preview in thumbnail mode
-- **Default thumbnail management** - set representative image per individual
-- **Individual pages** - dedicated view for each person with all their clips
-
-### Main Pages
-
-**index.php** - Main gallery view
-- Grid of all clips with filtering and sorting
-- Click thumbnail to open video
-- Hover to see mosaic preview
-- Toggle between thumbnail/mosaic view
-- Set default thumbnail buttons for each individual
-
-**individuals.php** - List of all known individuals
-- Shows all individuals with their default thumbnails
-- Click to view individual's page
-- Shows clip count per individual
-- Warning badge if no default thumbnail set
-
-**individual.php?id=X** - Individual detail page
-- All clips featuring specific individual
-- Select default thumbnail from all options
-- Current default highlighted with green border
-- Match confidence scores shown
 
 ### Accessing the Interface
 
