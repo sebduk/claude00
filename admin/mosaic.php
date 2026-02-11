@@ -235,6 +235,9 @@ $colors = getColorScheme();
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 130px;
+            z-index: 998;
         }
         
         .assignment-header {
@@ -668,7 +671,7 @@ $colors = getColorScheme();
                         
                         <div class="clip-info">
                             <span class="clip-type-badge badge-<?= $clip['clip_type'] ?>">
-                                <?= $clip['clip_type'] ?>
+                                <?= $clip['clip_type'] ?> 
                             </span>
                             
                             <div class="clip-filename" title="<?= htmlspecialchars($clip['filepath']) ?>">
