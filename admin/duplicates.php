@@ -349,10 +349,10 @@ $colors = getColorScheme();
     
     <div class="container">
         <div class="header">
-            <h1>🔍 Potential Duplicates</h1>
+            <h1>&#128269; Potential Duplicates</h1>
             
             <div class="info-box">
-                <strong>🔍 Smart Duplicate Detection:</strong> Finds clips with ≥50% similarity based on 
+                <strong>&#128269; Smart Duplicate Detection:</strong> Finds clips with &#8805;50% similarity based on 
                 matching faces (50% weight), duration (40%), and file size (10%). 
                 <strong>Requires exact aspect ratio match.</strong> Results sorted by similarity (highest first).
             </div>
@@ -403,13 +403,13 @@ $colors = getColorScheme();
                                         </a>
                                     </div>
                                     <div class="clip-meta">
-                                        📐 <?= $pair['w1'] ?> × <?= $pair['h1'] ?>
+                                        &#128208; <?= $pair['w1'] ?> &#215; <?= $pair['h1'] ?>
                                     </div>
                                     <div class="clip-meta">
-                                        ⏱️ <?= gmdate('i:s', (int)round($pair['dur1'])) ?>
+                                        &#9201; <?= gmdate('i:s', (int)round($pair['dur1'])) ?>
                                     </div>
                                     <div class="clip-meta">
-                                        💾 <?= formatFileSize($pair['size1']) ?>
+                                        &#128190; <?= formatFileSize($pair['size1']) ?>
                                     </div>
                                     <div class="clip-path">
                                         <?= $pair['type1'] === 'known' ? 'videos/known/' : 'videos/unknown/' ?><?= htmlspecialchars($pair['path1']) ?>
@@ -437,13 +437,13 @@ $colors = getColorScheme();
                                         </a>
                                     </div>
                                     <div class="clip-meta">
-                                        📐 <?= $pair['w2'] ?> × <?= $pair['h2'] ?>
+                                        &#128208; <?= $pair['w2'] ?> &#215; <?= $pair['h2'] ?>
                                     </div>
                                     <div class="clip-meta">
-                                        ⏱️ <?= gmdate('i:s', (int)round($pair['dur2'])) ?>
+                                        &#9201; <?= gmdate('i:s', (int)round($pair['dur2'])) ?>
                                     </div>
                                     <div class="clip-meta">
-                                        💾 <?= formatFileSize($pair['size2']) ?>
+                                        &#128190; <?= formatFileSize($pair['size2']) ?>
                                     </div>
                                     <div class="clip-path">
                                         <?= $pair['type2'] === 'known' ? 'videos/known/' : 'videos/unknown/' ?><?= htmlspecialchars($pair['path2']) ?>
@@ -459,10 +459,10 @@ $colors = getColorScheme();
                             <?= $similarity ?>% Match
                             <div style="font-size: 13px; color: #666; margin-top: 8px; line-height: 1.6;">
                                 <strong>Breakdown:</strong><br>
-                                👥 Faces: <?= $pair['face_similarity'] ?>% (<?= $pair['common_faces'] ?> common)<br>
-                                ⏱️ Duration: <?= $pair['duration_similarity'] ?>% (diff: <?= round($pair['duration_diff'], 1) ?>s)<br>
-                                📐 Aspect: <?= $pair['aspect_similarity'] ?>% (<?= round($pair['aspect1'], 2) ?> vs <?= round($pair['aspect2'], 2) ?>)<br>
-                                💾 Size: <?= $pair['size_similarity'] ?>%
+                                &#128101; Faces: <?= $pair['face_similarity'] ?>% (<?= $pair['common_faces'] ?> common)<br>
+                                &#9201; Duration: <?= $pair['duration_similarity'] ?>% (diff: <?= round($pair['duration_diff'], 1) ?>s)<br>
+                                &#128208; Aspect: <?= $pair['aspect_similarity'] ?>% (<?= round($pair['aspect1'], 2) ?> vs <?= round($pair['aspect2'], 2) ?>)<br>
+                                &#128190; Size: <?= $pair['size_similarity'] ?>%
                             </div>
                         </div>
                         
@@ -487,7 +487,7 @@ $colors = getColorScheme();
     
     <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">⚠️ Confirm Deletion</div>
+            <div class="modal-title">&#9888; Confirm Deletion</div>
             <div class="modal-message" id="confirmMessage"></div>
             <div class="modal-buttons">
                 <button class="btn btn-keep" onclick="closeModal()">Cancel</button>

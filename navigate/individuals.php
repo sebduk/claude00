@@ -395,12 +395,12 @@ $colors = getColorScheme();
     <div class="container">
         <div class="main-content">
             <div class="header">
-                <h1>👥 Individuals (<?= count($individuals) ?>)</h1>
+                <h1>&#128101; Individuals (<?= count($individuals) ?>)</h1>
                 <div class="stats-row">
-                    <div class="stat-badge">⭐ Red: <?= $stats['red_stars'] ?></div>
-                    <div class="stat-badge">⭐ Yellow: <?= $stats['yellow_stars'] ?></div>
-                    <div class="stat-badge">⭐ Blue: <?= $stats['blue_stars'] ?></div>
-                    <div class="stat-badge">☆ None: <?= $stats['no_stars'] ?></div>
+                    <div class="stat-badge">&#11088; Red: <?= $stats['red_stars'] ?></div>
+                    <div class="stat-badge">&#11088; Yellow: <?= $stats['yellow_stars'] ?></div>
+                    <div class="stat-badge">&#11088; Blue: <?= $stats['blue_stars'] ?></div>
+                    <div class="stat-badge">&#9734; None: <?= $stats['no_stars'] ?></div>
                 </div>
             </div>
             
@@ -415,10 +415,10 @@ $colors = getColorScheme();
                             <label>Star Rating</label>
                             <select name="star">
                                 <option value="-1">All Stars</option>
-                                <option value="3" <?= $star_filter === 3 ? 'selected' : '' ?>>⭐ Red</option>
-                                <option value="2" <?= $star_filter === 2 ? 'selected' : '' ?>>⭐ Yellow</option>
-                                <option value="1" <?= $star_filter === 1 ? 'selected' : '' ?>>⭐ Blue</option>
-                                <option value="0" <?= $star_filter === 0 ? 'selected' : '' ?>>☆ None</option>
+                                <option value="3" <?= $star_filter === 3 ? 'selected' : '' ?>>&#11088; Red</option>
+                                <option value="2" <?= $star_filter === 2 ? 'selected' : '' ?>>&#11088; Yellow</option>
+                                <option value="1" <?= $star_filter === 1 ? 'selected' : '' ?>>&#11088; Blue</option>
+                                <option value="0" <?= $star_filter === 0 ? 'selected' : '' ?>>&#9734; None</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -445,11 +445,11 @@ $colors = getColorScheme();
                     <?php if (!$search && $star_filter === -1 && !$tag_filter): ?>
                         <a href="unknown.php" class="individual-card">
                             <div class="individual-thumbnail" style="background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);">
-                                <div style="font-size: 64px;">❓</div>
+                                <div style="font-size: 64px;">&#63;</div>
                             </div>
                             <div class="individual-info">
                                 <div class="individual-name">Unknown</div>
-                                <div class="individual-stats">🎬 <?= $unknown_count ?> clip<?= $unknown_count != 1 ? 's' : '' ?></div>
+                                <div class="individual-stats">&#127916; <?= $unknown_count ?> clip<?= $unknown_count != 1 ? 's' : '' ?></div>
                             </div>
                         </a>
                     <?php endif; ?>
@@ -479,7 +479,7 @@ $colors = getColorScheme();
                                 </div>
                                 <div class="individual-info">
                                     <div class="individual-name"><?= htmlspecialchars($individual['name']) ?></div>
-                                    <div class="individual-stats">🎬 <?= $individual['clip_count'] ?> clip<?= $individual['clip_count'] != 1 ? 's' : '' ?></div>
+                                    <div class="individual-stats">&#127916; <?= $individual['clip_count'] ?> clip<?= $individual['clip_count'] != 1 ? 's' : '' ?></div>
                                     <?php if (!empty($individual['tags'])): ?>
                                         <?= getTagsHTML($individual['tags'], false) ?>
                                     <?php endif; ?>
@@ -502,7 +502,7 @@ $colors = getColorScheme();
                                 </div>
                                 <div class="individual-info">
                                     <div class="individual-name"><?= htmlspecialchars($individual['name']) ?></div>
-                                    <div class="individual-stats">🎬 <?= $individual['clip_count'] ?> clip<?= $individual['clip_count'] != 1 ? 's' : '' ?></div>
+                                    <div class="individual-stats">&#127916; <?= $individual['clip_count'] ?> clip<?= $individual['clip_count'] != 1 ? 's' : '' ?></div>
                                     <?php if (!empty($individual['tags'])): ?>
                                         <?= getTagsHTML($individual['tags'], false) ?>
                                     <?php endif; ?>
@@ -525,7 +525,7 @@ $colors = getColorScheme();
                                 </div>
                                 <div class="individual-info">
                                     <div class="individual-name"><?= htmlspecialchars($individual['name']) ?></div>
-                                    <div class="individual-stats">🎬 <?= $individual['clip_count'] ?> clip<?= $individual['clip_count'] != 1 ? 's' : '' ?></div>
+                                    <div class="individual-stats">&#127916; <?= $individual['clip_count'] ?> clip<?= $individual['clip_count'] != 1 ? 's' : '' ?></div>
                                     <?php if (!empty($individual['tags'])): ?>
                                         <?= getTagsHTML($individual['tags'], false) ?>
                                     <?php endif; ?>
@@ -554,7 +554,7 @@ $colors = getColorScheme();
                             </div>
                             <div class="individual-info">
                                 <div class="individual-name"><?= htmlspecialchars($individual['name']) ?></div>
-                                <div class="individual-stats">🎬 <?= $individual['clip_count'] ?> clip<?= $individual['clip_count'] != 1 ? 's' : '' ?></div>
+                                <div class="individual-stats">&#127916; <?= $individual['clip_count'] ?> clip<?= $individual['clip_count'] != 1 ? 's' : '' ?></div>
                                 <?php if (!empty($individual['tags'])): ?>
                                     <?= getTagsHTML($individual['tags'], false) ?>
                                 <?php endif; ?>
@@ -580,19 +580,19 @@ $colors = getColorScheme();
             
             <?php if ($red_count > 0): ?>
                 <a href="#star-red" class="star-nav star-nav-red" title="Red starred (<?= $red_count ?>)">
-                    ★
+                    &#9733;
                 </a>
             <?php endif; ?>
             
             <?php if ($yellow_count > 0): ?>
                 <a href="#star-yellow" class="star-nav star-nav-yellow" title="Yellow starred (<?= $yellow_count ?>)">
-                    ★
+                    &#9733;
                 </a>
             <?php endif; ?>
             
             <?php if ($blue_count > 0): ?>
                 <a href="#star-blue" class="star-nav star-nav-blue" title="Blue starred (<?= $blue_count ?>)">
-                    ★
+                    &#9733;
                 </a>
             <?php endif; ?>
             

@@ -401,14 +401,14 @@ $colors = getColorScheme();
                         <?php endif; ?>
                     </div>
                     
-                    <a href="individuals.php" class="back-link">← Back</a>
+                    <a href="individuals.php" class="back-link">&#8592; Back</a>
                 </div>
             </div>
         </div>
         
         <!-- Section 1: Folder Files -->
         <div class="section">
-            <div class="section-title">📁 Clips in Folder (<?= count($clips) ?>)</div>
+            <div class="section-title">&#128193; Clips in Folder (<?= count($clips) ?>)</div>
             
             <?php if (count($clips) > 0): ?>
                 <table>
@@ -417,7 +417,7 @@ $colors = getColorScheme();
                             <th style="width: 100px;">Thumbnail</th>
                             <th>
                                 <a href="?id=<?= $individual_id ?>&sort=filename&order=<?= $sort === 'filename' && $order === 'ASC' ? 'DESC' : 'ASC' ?>">
-                                    Filename <?= $sort === 'filename' ? ($order === 'ASC' ? '▲' : '▼') : '' ?>
+                                    Filename <?= $sort === 'filename' ? ($order === 'ASC' ? '&#9650;' : '&#9660;') : '' ?>
                                 </a>
                             </th>
                             <th>Duration</th>
@@ -449,7 +449,7 @@ $colors = getColorScheme();
                                     <div class="folder-path">videos/known/<?= htmlspecialchars($clip['filepath']) ?></div>
                                 </td>
                                 <td><?= htmlspecialchars($clip['duration_text']) ?></td>
-                                <td><?= $clip['width'] ?> × <?= $clip['height'] ?></td>
+                                <td><?= $clip['width'] ?> &#215; <?= $clip['height'] ?></td>
                                 <td><?= date('Y-m-d', strtotime($clip['file_date'])) ?></td>
                                 <td>
                                     <?php if (!empty($clip['tags'])): ?>
@@ -463,7 +463,7 @@ $colors = getColorScheme();
                                         <?php if (!$is_default): ?>
                                             <button class="btn btn-default" onclick="setDefault(<?= $clip['clip_id'] ?>, <?= $individual_id ?>)">Default</button>
                                         <?php else: ?>
-                                            <span style="color: #3498db; font-size: 11px; font-weight: 600;">★ DEFAULT</span>
+                                            <span style="color: #3498db; font-size: 11px; font-weight: 600;">&#9733; DEFAULT</span>
                                         <?php endif; ?>
                                     </div>
                                 </td>
@@ -480,7 +480,7 @@ $colors = getColorScheme();
         
         <!-- Section 2: AI Suggestions -->
         <div class="section">
-            <div class="section-title">🤖 AI Match Suggestions (<?= count($suggestions) ?>)</div>
+            <div class="section-title">&#129302; AI Match Suggestions (<?= count($suggestions) ?>)</div>
             
             <?php if (count($suggestions) > 0): ?>
                 <table>
@@ -519,7 +519,7 @@ $colors = getColorScheme();
                                     <div class="folder-path">videos/unknown/<?= htmlspecialchars($sug['filepath']) ?></div>
                                 </td>
                                 <td><?= htmlspecialchars($sug['duration_text']) ?></td>
-                                <td><?= $sug['width'] ?> × <?= $sug['height'] ?></td>
+                                <td><?= $sug['width'] ?> &#215; <?= $sug['height'] ?></td>
                                 <td><?= date('Y-m-d', strtotime($sug['file_date'])) ?></td>
                                 <td>
                                     <span class="confidence-badge <?= $conf_class ?>">
@@ -552,7 +552,7 @@ $colors = getColorScheme();
     
     <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">⚠️ Confirm Action</div>
+            <div class="modal-title">&#9888; Confirm Action</div>
             <div class="modal-message" id="confirmMessage"></div>
             <div class="modal-buttons">
                 <button class="btn btn-unknown" onclick="closeModal()">Cancel</button>
@@ -566,7 +566,7 @@ $colors = getColorScheme();
     function toggleStar(id, curr) {
         const next = (curr + 1) % 4;
         
-        fetch('actions/update_star.php', {
+        fetch('../admin/actions/update_star.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ individual_id: id, star_rating: next })
@@ -577,7 +577,7 @@ $colors = getColorScheme();
     
     function moveToUnknown(id, name) {
         showConfirm(`Move "${name}" to unknown folder?`, () => {
-            fetch('actions/move_to_unknown.php', {
+            fetch('../admin/actions/move_to_unknown.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clip_id: id })
@@ -589,7 +589,7 @@ $colors = getColorScheme();
     
     function deleteClip(id, name) {
         showConfirm(`Delete "${name}"? This cannot be undone.`, () => {
-            fetch('actions/delete_clip.php', {
+            fetch('../admin/actions/delete_clip.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clip_id: id })
@@ -601,7 +601,7 @@ $colors = getColorScheme();
     
     function setDefault(clipId, indId) {
         showConfirm('Set as default thumbnail?', () => {
-            fetch('actions/set_default_thumbnail.php', {
+            fetch('../admin/actions/set_default_thumbnail.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clip_id: clipId, individual_id: indId })
@@ -613,7 +613,7 @@ $colors = getColorScheme();
     
     function acceptMatch(clipId, indId, name) {
         showConfirm(`Accept and move "${name}" to folder?`, () => {
-            fetch('actions/accept_match.php', {
+            fetch('../admin/actions/accept_match.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clip_id: clipId, individual_id: indId })
@@ -625,7 +625,7 @@ $colors = getColorScheme();
     
     function rejectMatch(clipId, indId, name) {
         showConfirm(`Reject match for "${name}"?`, () => {
-            fetch('actions/reject_match.php', {
+            fetch('../admin/actions/reject_match.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clip_id: clipId, individual_id: indId })

@@ -34,7 +34,7 @@ class DatabaseManager:
     
     def _initialize_schema(self):
         """Create tables if they don't exist (run schema.sql)"""
-        schema_file = Path(__file__).parent / "database_schema.sql"
+        schema_file = Path(__file__).parent / "database_schema_v2.sql"
         if schema_file.exists():
             with open(schema_file, 'r') as f:
                 self.connection.executescript(f.read())

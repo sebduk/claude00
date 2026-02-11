@@ -419,7 +419,7 @@ $colors = getColorScheme();
     
     <div class="container">
         <div class="header">
-            <h1>❓ Unknown Clips</h1>
+            <h1>&#63; Unknown Clips</h1>
             <div class="stats">
                 Showing <?= count($clips) ?> of <?= $db->query("SELECT COUNT(*) FROM clips WHERE clip_type = 'unknown'")->fetchColumn() ?> total unknown clips
             </div>
@@ -479,7 +479,7 @@ $colors = getColorScheme();
             
             <div class="assignment-options">
                 <div class="assignment-option">
-                    <h3>📂 Assign to Existing Individual</h3>
+                    <h3>&#128194; Assign to Existing Individual</h3>
                     <select id="existingIndividual">
                         <option value="">-- Select Individual --</option>
                         <?php foreach ($individuals as $ind): ?>
@@ -494,7 +494,7 @@ $colors = getColorScheme();
                 </div>
                 
                 <div class="assignment-option">
-                    <h3>➕ Create New Individual</h3>
+                    <h3>&#10133; Create New Individual</h3>
                     <p style="margin-bottom: 15px; color: #666;">
                         Will create: <strong><?= htmlspecialchars($next_zz_name) ?></strong>
                     </p>
@@ -551,7 +551,7 @@ $colors = getColorScheme();
                                     <div class="folder-path">videos/unknown/<?= htmlspecialchars($clip['filepath']) ?></div>
                                 </td>
                                 <td><?= htmlspecialchars($clip['duration_text']) ?></td>
-                                <td><?= number_format($clip['width']) ?> × <?= number_format($clip['height']) ?></td>
+                                <td><?= number_format($clip['width']) ?> &#215; <?= number_format($clip['height']) ?></td>
                                 <td><?= date('Y-m-d', strtotime($clip['file_date'])) ?></td>
                                 <td><?= formatFileSize($clip['filesize']) ?></td>
                                 <td>
@@ -586,7 +586,7 @@ $colors = getColorScheme();
     
     <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">⚠️ Confirm Action</div>
+            <div class="modal-title">&#9888; Confirm Action</div>
             <div class="modal-message" id="confirmMessage"></div>
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>

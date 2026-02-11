@@ -18,7 +18,7 @@ $theme = getCurrentTheme();
                 </a>
             <?php else: ?>
                 <a href="individuals.php">
-                    &#9881;&#65039; <span>Admin</span>
+                    &#9881;&#65039; <span>Admin</span>
                 </a>
             <?php endif; ?>
         </div>

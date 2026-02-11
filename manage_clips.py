@@ -309,9 +309,12 @@ def unlink_known_clip(db_path: str, clip_id: int, individual_id: int,
         print(f"\nClip unlinked from {individual['name']} and moved to unknown/{year_month}/")
         
         return True
+
+
+def unbind_all_matches_for_clip(db_path: str, clip_id: int):
     """
     Remove all individual matches for a clip (reset to unmatched)
-    
+
     Args:
         db_path: Path to database
         clip_id: ID of the clip

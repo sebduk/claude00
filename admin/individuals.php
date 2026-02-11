@@ -543,9 +543,9 @@ $colors = getColorScheme();
             <div class="header">
                 <h1>&#128101; Individuals (<?= count($individuals) ?>)</h1>
                 <div class="stats-row">
-                    <div class="stat-badge">&#11088; Red: <?= $stats['red_stars'] ?></div>
-                    <div class="stat-badge">&#11088; Yellow: <?= $stats['yellow_stars'] ?></div>
-                    <div class="stat-badge">&#11088; Blue: <?= $stats['blue_stars'] ?></div>
+                    <div class="stat-badge">&#11088; Red: <?= $stats['red_stars'] ?></div>
+                    <div class="stat-badge">&#11088; Yellow: <?= $stats['yellow_stars'] ?></div>
+                    <div class="stat-badge">&#11088; Blue: <?= $stats['blue_stars'] ?></div>
                     <div class="stat-badge">&#9734; None: <?= $stats['no_stars'] ?></div>
                 </div>
             </div>
@@ -568,9 +568,9 @@ $colors = getColorScheme();
                             <label>Star Rating</label>
                             <select name="star">
                                 <option value="-1">All Stars</option>
-                                <option value="3" <?= $star_filter === 3 ? 'selected' : '' ?>>&#11088; Red</option>
-                                <option value="2" <?= $star_filter === 2 ? 'selected' : '' ?>>&#11088; Yellow</option>
-                                <option value="1" <?= $star_filter === 1 ? 'selected' : '' ?>>&#11088; Blue</option>
+                                <option value="3" <?= $star_filter === 3 ? 'selected' : '' ?>>&#11088; Red</option>
+                                <option value="2" <?= $star_filter === 2 ? 'selected' : '' ?>>&#11088; Yellow</option>
+                                <option value="1" <?= $star_filter === 1 ? 'selected' : '' ?>>&#11088; Blue</option>
                                 <option value="0" <?= $star_filter === 0 ? 'selected' : '' ?>>&#9734; None</option>
                             </select>
                         </div>
@@ -634,7 +634,7 @@ $colors = getColorScheme();
                                         </a>
                                     </div>
                                     <div class="individual-stats">
-                                        &#128193; <?= $individual['folder_clip_count'] ?> clip<?= $individual['folder_clip_count'] != 1 ? 's' : '' ?>
+                                        &#128193; <?= $individual['folder_clip_count'] ?> clip<?= $individual['folder_clip_count'] != 1 ? 's' : '' ?>
                                         <?php if ($individual['ai_match_count'] > 0): ?>
                                             &#8226; &#129302; <?= $individual['ai_match_count'] ?> match<?= $individual['ai_match_count'] != 1 ? 'es' : '' ?>
                                         <?php endif; ?>
@@ -677,7 +677,7 @@ $colors = getColorScheme();
                                         </a>
                                     </div>
                                     <div class="individual-stats">
-                                        &#128193; <?= $individual['folder_clip_count'] ?> clip<?= $individual['folder_clip_count'] != 1 ? 's' : '' ?>
+                                        &#128193; <?= $individual['folder_clip_count'] ?> clip<?= $individual['folder_clip_count'] != 1 ? 's' : '' ?>
                                         <?php if ($individual['ai_match_count'] > 0): ?>
                                             &#8226; &#129302; <?= $individual['ai_match_count'] ?> match<?= $individual['ai_match_count'] != 1 ? 'es' : '' ?>
                                         <?php endif; ?>
@@ -720,7 +720,7 @@ $colors = getColorScheme();
                                         </a>
                                     </div>
                                     <div class="individual-stats">
-                                        &#128193; <?= $individual['folder_clip_count'] ?> clip<?= $individual['folder_clip_count'] != 1 ? 's' : '' ?>
+                                        &#128193; <?= $individual['folder_clip_count'] ?> clip<?= $individual['folder_clip_count'] != 1 ? 's' : '' ?>
                                         <?php if ($individual['ai_match_count'] > 0): ?>
                                             &#8226; &#129302; <?= $individual['ai_match_count'] ?> match<?= $individual['ai_match_count'] != 1 ? 'es' : '' ?>
                                         <?php endif; ?>
@@ -770,7 +770,7 @@ $colors = getColorScheme();
                                     </a>
                                 </div>
                                 <div class="individual-stats">
-                                    &#128193; <?= $individual['folder_clip_count'] ?> clip<?= $individual['folder_clip_count'] != 1 ? 's' : '' ?>
+                                    &#128193; <?= $individual['folder_clip_count'] ?> clip<?= $individual['folder_clip_count'] != 1 ? 's' : '' ?>
                                     <?php if ($individual['ai_match_count'] > 0): ?>
                                         &#8226; &#129302; <?= $individual['ai_match_count'] ?> match<?= $individual['ai_match_count'] != 1 ? 'es' : '' ?>
                                     <?php endif; ?>
@@ -883,7 +883,7 @@ $colors = getColorScheme();
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">âš ï¸ Confirm Action</div>
+            <div class="modal-title">&#9888; Confirm Action</div>
             <div class="modal-message" id="confirmMessage"></div>
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>

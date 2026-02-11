@@ -639,7 +639,7 @@ $colors = getColorScheme();
                             <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleAllMatches(this)"></th>
                             <th style="width: 100px;">Thumbnail</th>
                             <th style="cursor: pointer;" onclick="sortMatches()">
-                                <span id="sortLabel">Filename ▼</span>
+                                <span id="sortLabel">Filename &#9660;</span>
                             </th>
                             <th style="cursor: pointer;" onclick="sortByColumn('duration')">
                                 <span id="durationSortLabel">Duration</span>
@@ -651,7 +651,7 @@ $colors = getColorScheme();
                                 <span id="dateSortLabel">Date</span>
                             </th>
                             <th style="cursor: pointer;" onclick="sortByConfidence()">
-                                <span id="confidenceSortLabel">Confidence ▼</span>
+                                <span id="confidenceSortLabel">Confidence &#9660;</span>
                             </th>
                             <th style="cursor: pointer;" onclick="sortByColumn('tags')">
                                 <span id="tagsSortLabel">Tags</span>
@@ -702,7 +702,7 @@ $colors = getColorScheme();
                                     </div>
                                 </td>
                                 <td><?= htmlspecialchars($sug['duration_text']) ?></td>
-                                <td><?= $sug['width'] ?> × <?= $sug['height'] ?></td>
+                                <td><?= $sug['width'] ?> &#215; <?= $sug['height'] ?></td>
                                 <td><?= date('Y-m-d', strtotime($sug['file_date'])) ?></td>
                                 <td>
                                     <span class="confidence-badge <?= $conf_class ?>">
@@ -735,7 +735,7 @@ $colors = getColorScheme();
     
     <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">âš ï¸ Confirm Action</div>
+            <div class="modal-title">&#9888; Confirm Action</div>
             <div class="modal-message" id="confirmMessage"></div>
             <div class="modal-buttons">
                 <button class="btn btn-unknown" onclick="closeModal()">Cancel</button>
@@ -747,7 +747,7 @@ $colors = getColorScheme();
     <!-- Merge Modal -->
     <div id="mergeModal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-title">ðŸ”€ Merge Individual</div>
+            <div class="modal-title">&#128256; Merge Individual</div>
             <div class="modal-message">
                 <p style="margin-bottom: 15px;">
                     Merge <strong><?= htmlspecialchars($individual['name']) ?></strong> into another individual. This will:
@@ -772,7 +772,7 @@ $colors = getColorScheme();
                 </div>
                 
                 <div style="background: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 15px; border-radius: 4px; margin-top: 15px;">
-                    <strong>âš ï¸ Warning:</strong> This action cannot be undone!
+                    <strong>&#9888; Warning:</strong> This action cannot be undone!
                 </div>
             </div>
             <div class="modal-buttons" style="margin-top: 20px;">
@@ -1202,9 +1202,9 @@ $colors = getColorScheme();
             'Lower values = stricter matching (fewer false positives)\n' +
             'Higher values = looser matching (may include false positives)\n\n' +
             'Recommended values:\n' +
-            '• 0.4-0.5 = Very strict (high confidence only)\n' +
-            '• 0.6 = Default (balanced)\n' +
-            '• 0.7-0.8 = Permissive (more matches, check carefully)\n\n' +
+            '\u2022 0.4-0.5 = Very strict (high confidence only)\n' +
+            '\u2022 0.6 = Default (balanced)\n' +
+            '\u2022 0.7-0.8 = Permissive (more matches, check carefully)\n\n' +
             'Enter threshold value:';
         
         const threshold = prompt(thresholdHelp, '0.6');
@@ -1378,10 +1378,10 @@ $colors = getColorScheme();
         const rows = Array.from(tbody.querySelectorAll('tr'));
         
         const labels = [
-            'Filename ▼', 
-            'Path ▼', 
-            'Filename ▲', 
-            'Path ▲'
+            'Filename &#9660;', 
+            'Path &#9660;', 
+            'Filename &#9650;', 
+            'Path &#9650;'
         ];
         
         rows.sort((a, b) => {
@@ -1430,7 +1430,7 @@ $colors = getColorScheme();
         
         confidenceSortDescending = !confidenceSortDescending;
         document.getElementById('confidenceSortLabel').textContent = 
-            confidenceSortDescending ? 'Confidence ▼' : 'Confidence ▲';
+            confidenceSortDescending ? 'Confidence &#9660;' : 'Confidence &#9650;';
     }
     
     // Generic column sorting
@@ -1471,7 +1471,7 @@ $colors = getColorScheme();
         const labelId = column + 'SortLabel';
         const label = document.getElementById(labelId);
         const columnName = column.charAt(0).toUpperCase() + column.slice(1);
-        label.textContent = columnName + (descending ? ' ▲' : ' ▼');
+        label.textContent = columnName + (descending ? ' &#9650;' : ' &#9660;');
     }
     
     // Close tag modals on Escape

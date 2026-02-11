@@ -411,7 +411,7 @@ $colors = getColorScheme();
     
     <div class="container">
         <div class="header">
-            <h1>🤖 AI Match Suggestions</h1>
+            <h1>&#129302; AI Match Suggestions</h1>
             
             <div class="stats-row">
                 <div class="stat-box">
@@ -508,7 +508,7 @@ $colors = getColorScheme();
                             </div>
                         </div>
                         
-                        <div class="arrow">→</div>
+                        <div class="arrow">&#8594;</div>
                         
                         <!-- Clip Section -->
                         <div class="clip-section">
@@ -525,7 +525,7 @@ $colors = getColorScheme();
                                     </a>
                                 </div>
                                 <div class="meta">
-                                    <?= $match['width'] ?> × <?= $match['height'] ?> • 
+                                    <?= $match['width'] ?> &#215; <?= $match['height'] ?> &#8226; 
                                     <?= htmlspecialchars($match['duration_text']) ?>
                                 </div>
                                 <?php if (!empty($match['clip_tags'])): ?>
@@ -556,7 +556,7 @@ $colors = getColorScheme();
     
     <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">⚠️ Confirm Action</div>
+            <div class="modal-title">&#9888; Confirm Action</div>
             <div class="modal-message" id="confirmMessage"></div>
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>

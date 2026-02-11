@@ -513,7 +513,7 @@ $colors = getColorScheme();
     <div class="container">
         <div class="page-header">
             <div>
-                <h1>&#127902;&#65039; Mosaic View</h1>
+                <h1>&#127902;&#65039; Mosaic View</h1>
                 <div class="stats">
                     Showing <?= count($clips) ?> clip<?= count($clips) !== 1 ? 's' : '' ?>
                 </div>

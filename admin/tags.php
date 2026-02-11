@@ -283,7 +283,7 @@ $colors = getColorScheme();
                                 <td><?= $tag['individual_count'] ?></td>
                                 <td><?= $tag['clip_count'] ?></td>
                                 <td style="font-size: 12px; color: #666;">
-                                    <?= htmlspecialchars($tag['notes'] ?: '—') ?>
+                                    <?= htmlspecialchars($tag['notes'] ?: '&#8212;') ?>
                                 </td>
                                 <td>
                                     <div class="action-buttons">
@@ -356,7 +356,7 @@ $colors = getColorScheme();
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="modal confirm-modal">
         <div class="modal-content">
-            <div class="modal-title">⚠️ Confirm Action</div>
+            <div class="modal-title">&#9888; Confirm Action</div>
             <div class="modal-message" id="confirmMessage"></div>
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancel</button>

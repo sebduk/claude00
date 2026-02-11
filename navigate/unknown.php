@@ -262,7 +262,7 @@ $colors = getColorScheme();
             <div class="header-top">
                 <div class="header-left">
                     <div class="header-title">
-                        <h1>❓ Unknown</h1>
+                        <h1>&#63; Unknown</h1>
                     </div>
                     
                     <div class="stats-grid">
@@ -283,17 +283,17 @@ $colors = getColorScheme();
                 
                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 15px;">
                     <div class="profile-thumbnail">
-                        ❓
+                        &#63;
                     </div>
                     
-                    <a href="individuals.php" class="back-link">← Back to List</a>
+                    <a href="individuals.php" class="back-link">&#8592; Back to List</a>
                 </div>
             </div>
         </div>
         
         <!-- Clips Table -->
         <div class="section">
-            <div class="section-title">📁 All Unknown Clips (<?= count($clips) ?>)</div>
+            <div class="section-title">&#128193; All Unknown Clips (<?= count($clips) ?>)</div>
             
             <?php if (count($clips) > 0): ?>
                 <table>
@@ -302,22 +302,22 @@ $colors = getColorScheme();
                             <th style="width: 100px;">Thumbnail</th>
                             <th>
                                 <a href="?sort=filename&order=<?= $sort === 'filename' && $order === 'ASC' ? 'DESC' : 'ASC' ?>">
-                                    Filename <?= $sort === 'filename' ? ($order === 'ASC' ? '▲' : '▼') : '' ?>
+                                    Filename <?= $sort === 'filename' ? ($order === 'ASC' ? '&#9650;' : '&#9660;') : '' ?>
                                 </a>
                             </th>
                             <th>
                                 <a href="?sort=duration&order=<?= $sort === 'duration' && $order === 'ASC' ? 'DESC' : 'ASC' ?>">
-                                    Duration <?= $sort === 'duration' ? ($order === 'ASC' ? '▲' : '▼') : '' ?>
+                                    Duration <?= $sort === 'duration' ? ($order === 'ASC' ? '&#9650;' : '&#9660;') : '' ?>
                                 </a>
                             </th>
                             <th>
                                 <a href="?sort=dimensions&order=<?= $sort === 'dimensions' && $order === 'ASC' ? 'DESC' : 'ASC' ?>">
-                                    Dimensions <?= $sort === 'dimensions' ? ($order === 'ASC' ? '▲' : '▼') : '' ?>
+                                    Dimensions <?= $sort === 'dimensions' ? ($order === 'ASC' ? '&#9650;' : '&#9660;') : '' ?>
                                 </a>
                             </th>
                             <th>
                                 <a href="?sort=file_date&order=<?= $sort === 'file_date' && $order === 'ASC' ? 'DESC' : 'ASC' ?>">
-                                    Date <?= $sort === 'file_date' ? ($order === 'ASC' ? '▲' : '▼') : '' ?>
+                                    Date <?= $sort === 'file_date' ? ($order === 'ASC' ? '&#9650;' : '&#9660;') : '' ?>
                                 </a>
                             </th>
                             <th>Tags</th>
@@ -344,7 +344,7 @@ $colors = getColorScheme();
                                     <div class="folder-path">videos/unknown/<?= htmlspecialchars($clip['filepath']) ?></div>
                                 </td>
                                 <td><?= htmlspecialchars($clip['duration_text']) ?></td>
-                                <td><?= $clip['width'] ?> × <?= $clip['height'] ?></td>
+                                <td><?= $clip['width'] ?> &#215; <?= $clip['height'] ?></td>
                                 <td><?= date('Y-m-d', strtotime($clip['file_date'])) ?></td>
                                 <td>
                                     <?php if (!empty($clip['tags'])): ?>

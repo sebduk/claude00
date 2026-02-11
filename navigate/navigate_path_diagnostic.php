@@ -27,7 +27,7 @@ foreach ($clips as $clip) {
     echo "<td>{$clip['thumbnail_path']}</td>";
     echo "<td>{$clip['clip_type']}</td>";
     echo "<td><a href='{$video_url}' target='_blank'>Test Link</a></td>";
-    echo "<td><img src='{$thumb_url}' width='80' onerror='this.parentNode.innerHTML=\"❌ Not found\"'></td>";
+    echo "<td><img src='{$thumb_url}' width='80' onerror='this.parentNode.innerHTML=\"&#10060; Not found\"'></td>";
     echo "</tr>";
 }
 
@@ -55,7 +55,7 @@ foreach ($individuals as $ind) {
     echo "<td>{$ind['thumbnail_path']}</td>";
     echo "<td>{$thumb_url}</td>";
     if ($thumb_url) {
-        echo "<td><img src='{$thumb_url}' width='80' onerror='this.parentNode.innerHTML=\"❌ Not found\"'></td>";
+        echo "<td><img src='{$thumb_url}' width='80' onerror='this.parentNode.innerHTML=\"&#10060; Not found\"'></td>";
     } else {
         echo "<td>No default set</td>";
     }

@@ -326,14 +326,14 @@ $colors = getColorScheme();
     
     <div class="container">
         <div class="page-header">
-            <h1>🔍 Face Clusters</h1>
+            <h1>&#128269; Face Clusters</h1>
             <p>
                 Discover groups of similar faces in unknown clips. Each cluster represents a potential new individual
                 that you can add to your database.
             </p>
             
             <div class="info-box">
-                <strong>💡 How it works:</strong> The system compares all unknown faces and groups those that match above
+                <strong>&#128161; How it works:</strong> The system compares all unknown faces and groups those that match above
                 your confidence threshold. Larger clusters with high confidence likely represent the same person appearing
                 in multiple clips.
             </div>
@@ -385,10 +385,10 @@ $colors = getColorScheme();
                         <div>
                             <div class="cluster-title">Cluster #<?= $idx + 1 ?></div>
                             <div class="cluster-stats">
-                                <?= count($cluster['clips']) ?> clips • 
+                                <?= count($cluster['clips']) ?> clips &#8226; 
                                 Suggested as: <strong><?= htmlspecialchars($cluster['suggested_name']) ?></strong>
                                 <?php if ($avg_confidence > 0): ?>
-                                    • Avg confidence: <?= $avg_confidence ?>%
+                                    &#8226; Avg confidence: <?= $avg_confidence ?>%
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -418,7 +418,7 @@ $colors = getColorScheme();
                                         <?= htmlspecialchars($clip['filename']) ?>
                                     </div>
                                     <div class="face-meta">
-                                        <?= $clip['width'] ?>×<?= $clip['height'] ?> • <?= $clip['duration_text'] ?>
+                                        <?= $clip['width'] ?>&#215;<?= $clip['height'] ?> &#8226; <?= $clip['duration_text'] ?>
                                     </div>
                                     <?php if ($conf > 0): ?>
                                         <span class="confidence-badge <?= $conf_class ?>">

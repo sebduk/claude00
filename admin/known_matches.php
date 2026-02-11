@@ -303,14 +303,14 @@ $colors = getColorScheme();
     
     <div class="container">
         <div class="page-header">
-            <h1>👥 Known Individual Matches</h1>
+            <h1>&#128101; Known Individual Matches</h1>
             <p>
                 Find potential duplicate individuals in your database. These are known individuals whose faces 
                 match at high confidence, suggesting they might be the same person added under different names.
             </p>
             
             <div class="info-box">
-                <strong>⚠️ Important:</strong> High confidence matches may indicate duplicates that should be merged.
+                <strong>&#9888; Important:</strong> High confidence matches may indicate duplicates that should be merged.
                 Review each match carefully before merging, as this action cannot be undone.
             </div>
         </div>
@@ -371,7 +371,7 @@ $colors = getColorScheme();
                             <div class="individual-stats">
                                 <?= $ind1['clip_count'] ?> clips
                                 <?php if ($ind1['star_rating'] > 0): ?>
-                                    • <?= str_repeat('⭐', $ind1['star_rating']) ?>
+                                    &#8226; <?= str_repeat('&#11088;', $ind1['star_rating']) ?>
                                 <?php endif; ?>
                             </div>
                             <div style="margin-top: 10px;">
@@ -396,7 +396,7 @@ $colors = getColorScheme();
                             <div class="individual-stats">
                                 <?= $ind2['clip_count'] ?> clips
                                 <?php if ($ind2['star_rating'] > 0): ?>
-                                    • <?= str_repeat('⭐', $ind2['star_rating']) ?>
+                                    &#8226; <?= str_repeat('&#11088;', $ind2['star_rating']) ?>
                                 <?php endif; ?>
                             </div>
                             <div style="margin-top: 10px;">
@@ -416,7 +416,7 @@ $colors = getColorScheme();
             <?php endforeach; ?>
         <?php else: ?>
             <div class="no-matches">
-                <h2>✓ No duplicate individuals found!</h2>
+                <h2>&#10003; No duplicate individuals found!</h2>
                 <p>All known individuals appear to be unique at the selected confidence threshold.</p>
             </div>
         <?php endif; ?>

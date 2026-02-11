@@ -131,10 +131,10 @@ function formatDuration($seconds) {
  */
 function getStarHTML($rating, $clickable = false, $individual_id = null) {
     $stars = [
-        0 => ['icon' => '☆', 'color' => '#95a5a6', 'title' => 'No rating'],
-        1 => ['icon' => '★', 'color' => '#3498db', 'title' => 'Blue star'],
-        2 => ['icon' => '★', 'color' => '#f1c40f', 'title' => 'Yellow star'],
-        3 => ['icon' => '★', 'color' => '#e74c3c', 'title' => 'Red star'],
+        0 => ['icon' => '&#9734;', 'color' => '#95a5a6', 'title' => 'No rating'],
+        1 => ['icon' => '&#9733;', 'color' => '#3498db', 'title' => 'Blue star'],
+        2 => ['icon' => '&#9733;', 'color' => '#f1c40f', 'title' => 'Yellow star'],
+        3 => ['icon' => '&#9733;', 'color' => '#e74c3c', 'title' => 'Red star'],
     ];
     
     $star = $stars[$rating] ?? $stars[0];
@@ -218,7 +218,7 @@ function getSortIndicator($column, $current_sort, $current_order) {
     if ($column !== $current_sort) {
         return '';
     }
-    return $current_order === 'ASC' ? ' ▲' : ' ▼';
+    return $current_order === 'ASC' ? ' &#9650;' : ' &#9660;';
 }
 
 /**
