@@ -34,7 +34,23 @@ try {
     // Add tag (INSERT OR IGNORE prevents duplicates)
     $stmt = $db->prepare("INSERT OR IGNORE INTO individual_tags (individual_id, tag_id) VALUES (?, ?)");
     $stmt->execute([$individual_id, $tag_id]);
-    
+
+    // If tag type is 'both', also apply to all known clips of this individual
+    if ($tag['tag_type'] === 'both') {
+        $name_stmt = $db->prepare("SELECT name FROM individuals WHERE individual_id = ?");
+        $name_stmt->execute([$individual_id]);
+        $individual = $name_stmt->fetch();
+
+        if ($individual) {
+            $clips_stmt = $db->prepare("
+                INSERT OR IGNORE INTO clip_tags (clip_id, tag_id)
+                SELECT clip_id, ? FROM clips
+                WHERE folder_person = ? AND clip_type = 'known'
+            ");
+            $clips_stmt->execute([$tag_id, $individual['name']]);
+        }
+    }
+
     jsonResponse(true, 'Tag added');
     
 } catch (Exception $e) {
