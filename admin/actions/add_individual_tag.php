@@ -35,6 +35,8 @@ try {
     $stmt = $db->prepare("INSERT OR IGNORE INTO individual_tags (individual_id, tag_id) VALUES (?, ?)");
     $stmt->execute([$individual_id, $tag_id]);
 
+    $clips_tagged = 0;
+
     // If tag type is 'both', also apply to all known clips of this individual
     if ($tag['tag_type'] === 'both') {
         $name_stmt = $db->prepare("SELECT name FROM individuals WHERE individual_id = ?");
@@ -42,16 +44,21 @@ try {
         $individual = $name_stmt->fetch();
 
         if ($individual) {
-            $clips_stmt = $db->prepare("
-                INSERT OR IGNORE INTO clip_tags (clip_id, tag_id)
-                SELECT clip_id, ? FROM clips
-                WHERE folder_person = ? AND clip_type = 'known'
-            ");
-            $clips_stmt->execute([$tag_id, $individual['name']]);
+            // Get all known clip IDs for this individual
+            $clips_stmt = $db->prepare("SELECT clip_id FROM clips WHERE folder_person = ? AND clip_type = 'known'");
+            $clips_stmt->execute([$individual['name']]);
+            $clip_ids = $clips_stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            // Add tag to each clip
+            $insert_stmt = $db->prepare("INSERT OR IGNORE INTO clip_tags (clip_id, tag_id) VALUES (?, ?)");
+            foreach ($clip_ids as $clip_id) {
+                $insert_stmt->execute([$clip_id, $tag_id]);
+                $clips_tagged++;
+            }
         }
     }
 
-    jsonResponse(true, 'Tag added');
+    jsonResponse(true, 'Tag added', ['tag_type' => $tag['tag_type'], 'clips_tagged' => $clips_tagged]);
     
 } catch (Exception $e) {
     jsonResponse(false, 'Error: ' . $e->getMessage());
