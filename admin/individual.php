@@ -578,7 +578,7 @@ $colors = getColorScheme();
                                                     <span onclick="removeClipTag(<?= $clip['clip_id'] ?>, <?= $tag['tag_id'] ?>)" 
                                                           style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); cursor: pointer; font-weight: bold; opacity: 0.8;"
                                                           title="Remove tag">
-                                                        &#128465;&#65039;
+                                                        &#8592;
                                                     </span>
                                                 </span>
                                             <?php endforeach; ?>
