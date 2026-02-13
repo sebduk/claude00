@@ -1,0 +1,248 @@
+BODY
+{
+    FONT-SIZE: 8pt;
+    COLOR: #000099;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+TD
+{
+    FONT-SIZE: 8pt;
+    COLOR: #000099;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+.Text
+{
+    FONT-SIZE: 8pt;
+    COLOR: #000099;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+H1
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 18pt;
+    FONT-FAMILY: Arial Narrow, Helvetica Condensed, Swiss
+}
+H2
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 16pt;
+    FONT-FAMILY: Arial Narrow, Helvetica Condensed, Swiss
+}
+H3
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 14pt;
+    FONT-FAMILY: Arial Narrow, Helvetica Condensed, Swiss
+}
+H4
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 12pt;
+    FONT-FAMILY: Arial Narrow, Helvetica Condensed, Swiss
+}
+H5
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 10pt;
+    FONT-FAMILY: Arial Narrow, Helvetica Condensed, Swiss
+}
+H6
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 8pt;
+    FONT-FAMILY: Arial Narrow, Helvetica Condensed, Swiss
+}
+A
+{
+    COLOR: #000099;
+    TEXT-DECORATION: none
+}
+A:link
+{
+    TEXT-DECORATION: none
+}
+A:visited
+{
+    TEXT-DECORATION: none
+}
+A:hover
+{
+    TEXT-DECORATION: underline
+}
+A:active
+{
+    TEXT-DECORATION: none
+}
+.Head
+{
+    FONT-SIZE: 45pt;
+    COLOR: white;
+    FONT-FAMILY: Arial Narrow, Helvetica Condensed, Swiss;
+    BACKGROUND-COLOR: #333333
+}
+.Menu
+{
+    FONT-SIZE: 9pt;
+    COLOR: white;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;
+    BACKGROUND-COLOR: #333333
+}
+.Menu A
+{
+    COLOR: white
+}
+.Clock
+{
+    BORDER-RIGHT: silver 1pt solid;
+    BORDER-TOP: silver 1pt solid;
+    FONT-SIZE: 8pt;
+    BORDER-LEFT: silver 1pt solid;
+    WIDTH: 180pt;
+    COLOR: #000099;
+    BORDER-BOTTOM: silver 1pt solid;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;
+    TEXT-ALIGN: center
+}
+.ClockHead
+{
+    BORDER-RIGHT: silver 1pt solid;
+    BORDER-TOP: silver 1pt solid;
+    FONT-SIZE: 8pt;
+    BORDER-LEFT: silver 1pt solid;
+    WIDTH: 70pt;
+    COLOR: #000099;
+    BORDER-BOTTOM: silver 1pt solid;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;
+    TEXT-ALIGN: center
+}
+.AlwaysOn
+{
+    BORDER-RIGHT: 1pt solid;
+    BORDER-TOP: 1pt solid;
+    FONT-SIZE: 8pt;
+    BORDER-LEFT: 1pt solid;
+    WIDTH: 15pt;
+    COLOR: #000099;
+    BORDER-BOTTOM: 1pt solid;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;
+    TEXT-ALIGN: center
+}
+.Wap
+{
+    FONT-SIZE: 8pt
+}
+.FormItem
+{
+    FONT-SIZE: 8pt;
+    WIDTH: 300pt;
+    COLOR: #000099;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+.PressRel
+{
+    FONT-SIZE: 8pt;
+    COLOR: #ffffff;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;
+    BACKGROUND-COLOR: #003366
+}
+.Button
+{
+    BORDER-RIGHT: #666666 1pt solid;
+    BORDER-TOP: #666666 1pt solid;
+    FONT-SIZE: 8pt;
+    BORDER-LEFT: #666666 1pt solid;
+    WIDTH: 100pt;
+    COLOR: #000099;
+    BORDER-BOTTOM: #666666 1pt solid;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+.ButtonFree
+{
+    BORDER-RIGHT: #666666 1pt solid;
+    BORDER-TOP: #666666 1pt solid;
+    FONT-SIZE: 8pt;
+    BORDER-LEFT: #666666 1pt solid;
+    COLOR: #000099;
+    BORDER-BOTTOM: #666666 1pt solid;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+.Box
+{
+    BORDER-RIGHT: #666666 1pt solid;
+    BORDER-TOP: #666666 1pt solid;
+    FONT-SIZE: 8pt;
+    BORDER-LEFT: #666666 1pt solid;
+    COLOR: #000099;
+    BORDER-BOTTOM: #666666 1pt solid;
+    FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif
+}
+.TaskWeekDay
+{
+    FONT-WEIGHT: bold;
+    TEXT-ALIGN: center
+}
+.TaskWeekDayToday
+{
+    FONT-WEIGHT: bold;
+    COLOR: #ff0000;
+    TEXT-ALIGN: center
+}
+.TaskWeekEnd
+{
+    FONT-WEIGHT: bold;
+    COLOR: #ffffff;
+    BACKGROUND-COLOR: #999999;
+    TEXT-ALIGN: center
+}
+.TaskWeekEndToDay
+{
+    FONT-WEIGHT: bold;
+    COLOR: #ff0000;
+    BACKGROUND-COLOR: #999999;
+    TEXT-ALIGN: center
+}
+.TaskTitle
+{
+    FONT-WEIGHT: bold
+}
+.TaskProjectL
+{
+    FONT-WEIGHT: bold;
+    COLOR: #ffffff;
+    BACKGROUND-COLOR: #333333;
+    TEXT-ALIGN: right
+}
+.TaskProjectR
+{
+    FONT-WEIGHT: bold;
+    COLOR: #ffffff;
+    BACKGROUND-COLOR: #333333
+}
+.TaskCompleted
+{
+    BACKGROUND-COLOR: #33cc33;
+    TEXT-ALIGN: center
+}
+.TaskToCome
+{
+    BACKGROUND-COLOR: #ffff00;
+    TEXT-ALIGN: center
+}
+.TaskOnGoing
+{
+    FONT-WEIGHT: bold;
+    COLOR: #ffffff;
+    BACKGROUND-COLOR: #ff9900;
+    TEXT-ALIGN: center
+}
+.TaskPast
+{
+    FONT-WEIGHT: bold;
+    COLOR: #ffffff;
+    BACKGROUND-COLOR: #ff0000;
+    TEXT-ALIGN: center
+}
+.High
+{
+    COLOR: maroon
+}
