@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /Afferto/
+Disallow: /Data/
+Disallow: /Gene/
+Disallow: /MV-IMC/
+Disallow: /Queryman/

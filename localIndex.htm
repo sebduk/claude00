@@ -1,0 +1,134 @@
+<html>
+<head>
+<title>Web Site</title>
+<link rel="stylesheet" type="text/css" href="style.css"></head>
+<link rel="shortcut icon" href="theo.ico" type="image/x-icon">
+<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0">
+<table border="0" width="100%" height="100%" cellspacing="0" cellpadding="0">
+<tr>
+<td align="center" class="head" width="160"><img border="0" src="logo.jpg"></td>
+<td class="head" width="1000" height="75" align="center">Web Site</td>
+</tr>
+<tr>
+<td class="menu" valign="top">
+<br>
+[<a href="http://ID-00155/Prog/Views/default.asp">Intranet</a>]
+</td>
+
+
+<td valign="top"><br>
+
+<table border="0" width="90%" align="center">
+<tr><td>
+<!-- Start Page-->
+<table align="center">
+<form name="MyForm">
+<tr valign="top" align="center">
+<td>Los Angeles<br>
+<input type="text" name="x37x" class="ClockHead"></td>
+<td>New York<br>
+<input type="text" name="x32x" class="ClockHead"></td>
+<td>London<br>
+<input type="text" name="x26x" class="ClockHead"></td>
+<td>Amsterdam<br>
+<input type="text" name="x24x" class="ClockHead"></td>
+<td>Beijing<br>
+<input type="text" name="x11x" class="ClockHead"></td>
+<td>Tokyo<br>
+<input type="text" name="x8x" class="ClockHead"></td>
+<td>Sydney<br>
+<input type="text" name="x3x" class="ClockHead"></td>
+</tr>
+</form>
+
+</table>
+<script language="javascript">
+resetTimes();
+function resetTimes(){
+setTimes();
+setTimeout('resetTimes()',100);
+}
+function setTimes(){
+var dt = new Date();
+var Offset = dt.getTimezoneOffset() / 60 ;
+var hr = dt.getHours();
+var mt = dt.getMinutes();
+var dt = new Date();
+dt.setHours(hr+Offset-7);
+document.MyForm.x37x.value=dt.toLocaleTimeString();
+var dt = new Date();
+dt.setHours(hr+Offset-4);
+document.MyForm.x32x.value=dt.toLocaleTimeString();
+var dt = new Date();
+dt.setHours(hr+Offset+1);
+document.MyForm.x26x.value=dt.toLocaleTimeString();
+var dt = new Date();
+dt.setHours(hr+Offset+2);
+document.MyForm.x24x.value=dt.toLocaleTimeString();
+var dt = new Date();
+dt.setHours(hr+Offset+8);
+document.MyForm.x11x.value=dt.toLocaleTimeString();
+var dt = new Date();
+dt.setHours(hr+Offset+9);
+document.MyForm.x8x.value=dt.toLocaleTimeString();
+var dt = new Date();
+dt.setHours(hr+Offset+10);
+document.MyForm.x3x.value=dt.toLocaleTimeString();
+}
+</script>
+
+<a href="http://intra.wisebourne.com/Prog/Views/">Wisebourne</a> / 
+<a href="http://mail.wisebourne.com:8080/domainadmin">Admin Mail</a><br>
+<a href="http://publishing.wisebourne.com/Prog/Views/">Wisebourne Publishing</a><br>
+<a href="http://www.onefortheother.com/intranet/Prog/Views/">One for the Others</a><br>
+<a href="http://intranet.digipayinternational.com/Prog/Views/">Digipay</a> / 
+<a href="http://www.m-value.com/Prog/Views/">M-Value</a> / 
+<a href="https://wmail.websystems.nl/webmail">WebMail</a> / 
+<a href="https://client.websystems.nl">Admin</a><br>
+<br>
+<a href="http://home.cea-ebm.com/Prog/Views/">Home out</a> / 
+<a href="http://192.168.1.2/Prog/Views/">in</a><br>
+<a href="http://home.cea-ebm.com:8067">Home Router out</a> / 
+<a href="http://192.168.1.1">in</a><br>
+<a href="http://dsm.iea.org">DSM</a> / 
+<a href="http://dsm.iea.org/queryman/hide.asp">Queryman</a><br>
+<a href="http://www.cea-ebm.com/Prog/Views/">Cea-Ebm</a> / 
+<a href="http://setrec.cea-ebm.com/Prog/Views/">Setrec</a><br>
+<a href="http://ww1.cea-ebm.com/Prog/Views/">Qua</a> / 
+<a href="http://ww2.cea-ebm.com/Prog/Views/">QTS</a><br>
+<a href="http://ww3.cea-ebm.com/Prog/Views/">Perso</a> [copy]<br>
+<a href="http://www.Magic-Words.net">Magic-Words.net</a><br>
+<a href="http://tajan.cea-ebm.com/">Tajan</a> / 
+<a href="http://moeskops.cea-ebm.com/">Moeskops</a> / 
+<a href="http://dunn.cea-ebm.com/">Dunn</a> / 
+<a href="http://pye.cea-ebm.com/">Pye</a> / 
+<a href="http://derita.cea-ebm.com/">de Rita</a> / 
+<a href="http://regnier.cea-ebm.com/">Regnier</a> / 
+<a href="http://livet.cea-ebm.com/">Livet</a><br>
+<br>
+<a href="http://www.bbc.co.uk/radio/">BBC Radio</a> / 
+<a href="http://www.radiofrance.fr/chaines/france-inter01/direct/index.php?ok=1">RadioFrance</a> / 
+<a href="http://www.abc.net.au/streaming/">ABC Radio</a><br>
+<a href="http://www.lemonde.fr/">Le Monde</a> / 
+<a href="http://www.intermediair.nl/">Intermediair</a><br>
+<a href="http://www.devguru.com">DevGuru</a> / 
+<a href="http://www.asp.net">ASP.NET</a> / 
+<a href="http://lab.msdn.microsoft.com/express/">MS Labs</a> / 
+<a href="http://www.teraflops.com/wbmp/">WBmp</a><br>
+<br>
+<a href="http://www.easyDNS.com">easyDNS</a> / 
+<a href="http://www.gandi.net/">Gandi</a><br>
+<a href="http://www.google.com">Google</a> / <a href="http://gmail.google.com">GMail</a><br>
+<br>
+<a href="https://webmail.cea.nl">cea mail</a> [vducos/vd3206494v]<br>
+<a href="http://webmail.ijnet.nl">ijnet</a> [ducos/6595]<br>
+<br>
+Interdev: New CEA [sebduk/rs380] / OFTO [w10513755/W2NXJt]
+
+
+<!--  End  Page-->
+</td></tr>
+</table>
+
+</td></tr></table>
+</body></html>
