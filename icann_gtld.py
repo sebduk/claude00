@@ -121,13 +121,19 @@ def _get(
 # ---------------------------------------------------------------------------
 
 
+_FALLBACK_RANGE = (1, 2000)  # covers all 1930 applications in the 2012 round
+
+
 def discover_ids(session: requests.Session) -> list[int]:
-    """Scrape the viewstatus page and return all application IDs."""
+    """
+    Scrape the viewstatus page and return all application IDs found in links.
+    Returns an empty list if the page is JS-rendered or unreachable.
+    """
     print(f"Fetching application list: {LIST_URL}")
     resp = _get(session, LIST_URL)
     if resp is None:
-        print("ERROR: Could not fetch the application list page.", file=sys.stderr)
-        sys.exit(1)
+        print("  [warn] Could not fetch the application list page.")
+        return []
 
     ids: set[int] = set()
     if BS4_OK:
@@ -433,6 +439,17 @@ def main() -> None:
         help="Process only these numeric application IDs",
     )
     parser.add_argument(
+        "--id-range",
+        nargs=2,
+        type=int,
+        metavar=("START", "END"),
+        help=(
+            "Try all IDs from START to END inclusive "
+            "(404s are silently skipped). "
+            "Used automatically when the list page cannot be scraped."
+        ),
+    )
+    parser.add_argument(
         "-o", "--output",
         metavar="DIR",
         default="downloads",
@@ -472,8 +489,20 @@ def main() -> None:
             int(p.stem) for p in output_dir.glob("*.html") if p.stem.isdigit()
         )
         print(f"Found {len(ids)} HTML files in {output_dir}/")
+    elif args.id_range:
+        start, end = args.id_range
+        ids = list(range(start, end + 1))
+        print(f"Using ID range {start}–{end} ({len(ids)} candidates; 404s will be skipped).\n")
     else:
         ids = discover_ids(session)
+        if not ids:
+            start, end = _FALLBACK_RANGE
+            ids = list(range(start, end + 1))
+            print(
+                f"  [info] List page appears to be JavaScript-rendered — no links found.\n"
+                f"  [info] Falling back to ID range {start}–{end}.\n"
+                f"  [info] You can also pass --id-range START END explicitly.\n"
+            )
 
     if not ids:
         print("No application IDs found. Exiting.")
