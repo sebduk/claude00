@@ -36,6 +36,7 @@ import re
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 import requests
 
@@ -91,7 +92,7 @@ def _get(
     *,
     timeout: int = 60,
     max_attempts: int = 4,
-) -> requests.Response | None:
+) -> Optional[requests.Response]:
     """GET with exponential-backoff retry on network errors."""
     delay = 2
     for attempt in range(1, max_attempts + 1):
@@ -156,7 +157,7 @@ def download_application(
     app_id: int,
     output_dir: Path,
     overwrite: bool = False,
-) -> Path | None:
+) -> Optional[Path]:
     """
     Download the public-portion application HTML for app_id.
     Saves to output_dir/{app_id}.html.  Returns local path or None.
