@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Downloads / output (generated at runtime)
+downloads/
+results.csv
+
+# OS
+.DS_Store
+Thumbs.db
