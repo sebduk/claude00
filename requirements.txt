@@ -1,0 +1,9 @@
+# Core HTTP
+requests>=2.28
+
+# HTML parsing (for scraping application detail pages)
+beautifulsoup4>=4.12
+
+# PDF text extraction (choose one; pdfplumber is preferred)
+pdfplumber>=0.10
+# pypdf>=4.0  # alternative if pdfplumber is unavailable
